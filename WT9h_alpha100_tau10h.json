@@ -59,7 +59,7 @@
     "sites_per_monomer": 1,
     "num_of_sisters": 77,
     "sister_lifetime": 36000,
-    "sister_damping": 100,
+    "sister_damping_facter": 100,
     "number_of_replica": 1,
     "steps": 64800,
     "dummy_steps": 0,

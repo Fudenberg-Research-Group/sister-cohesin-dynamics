@@ -49,7 +49,7 @@ class Translocator_Sister():
         
         # Define sisiter_lifetime and sister_damping
         sister_tau  = kwargs['sister_lifetime']
-        sister_damping = kwargs['sister_damping']
+        sister_damping = kwargs['sister_damping_facter']
 
         self.extrusion_engine = extrusion_engine(
                                number_of_LEFs, 

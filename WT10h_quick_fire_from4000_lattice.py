@@ -46,10 +46,8 @@ with open(
 ) as dict_file:
     paramdict_WT = json.load(dict_file)
 
-
 # readpath = '/project2/fudenber_735/xyan/HBD0715/S8h_sweep_0105/Sister_4000_extrude_0_S1'
 savepath = f'/Users/xcyan/Desktop/discrete_extrusion/02082025/tau{tau}h/WT_alpha_{alpha}_tau_{tau}h'
-
 
 monomers_per_replica = paramdict_WT['region_size_bp']//paramdict_WT['bp_per_monomer']
 sites_per_monomer = paramdict_WT['sites_per_monomer']
