@@ -16,7 +16,8 @@ from discrete_time_extrusion.boundaries.StaticBoundary import StaticBoundary
 from discrete_time_extrusion.extruders.MultistateExtruder_Sister import MultistateExtruder_Sister
 
 
-process_id = int(sys.argv[1])-1
+# process_id = int(sys.argv[1])-1
+process_id = 0
 
 # alpha_list = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 50000]
 
@@ -24,7 +25,7 @@ alpha_list = [90]
 
 tau = 8
 
-base_savepath = f'/scratch1/xingchiy/dW_sweep_01152025/tau{tau}h'
+base_savepath = f'tau{tau}h'
 
 for alpha in alpha_list:
     savepath = f'{base_savepath}/dW_alpha_{alpha}_tau_{tau}h_10'
@@ -39,13 +40,11 @@ parameters = list(zip(x.flatten(), y.flatten()))
 alpha, iteration = parameters[process_id] 
 print(alpha, iteration)
 
-readpath = '/project2/fudenber_735/xyan/HBD0715/S8h_sweep_0105/Sister_4000_extrude_0_S1'
-savepath = f'/scratch1/xingchiy/dW_sweep_01152025/tau{tau}h/dW_alpha_{alpha}_tau_{tau}h_10'
+
+savepath = f'tau{tau}h/dW_alpha_{alpha}_tau_{tau}h_10'
 
 
 with open(
-    f"/home1/xingchiy/sister_c/examples/Code0415/10long_cubicIC_1Volume/HBD/RC_Run/data/20250115/"
-    f"WT4h_sweep_20250123_no_sister_6h/"
     f"WT4h_alpha{alpha}_tau{tau}h_10.json",
     "r",
 ) as dict_file:
@@ -53,8 +52,6 @@ with open(
 
 
 with open(
-    f"/home1/xingchiy/sister_c/examples/Code0415/10long_cubicIC_1Volume/HBD/RC_Run/data/20250115/"
-    f"dW_sweep_20250123_no_sister_6h/"
     f"dW_alpha{alpha}_tau{tau}h_10.json",
     "r",
 ) as dict_file:

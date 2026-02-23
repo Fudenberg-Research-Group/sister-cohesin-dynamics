@@ -29,9 +29,9 @@ class Translocator_Sister():
         else:
             raise RuntimeError("Unrecognized device %s - use either 'CPU' or 'GPU'" % device)
     
-        
         sites_per_replica = kwargs["region_size_bp"]//kwargs['bp_per_monomer'] * kwargs['sites_per_monomer']
-        number_of_LEFs = (kwargs['number_of_replica'] * kwargs['region_size_bp']) // kwargs['LEF_separation_bp']
+        # number_of_LEFs = (kwargs['number_of_replica'] * kwargs['region_size_bp']) // kwargs['Full_LEF_separation_bp']
+        number_of_LEFs = int(kwargs['number_of_replica'] * kwargs["region_size_bp"] * kwargs['Total_LEF_per_bp'])
         
         assert len(site_types) == sites_per_replica, ("Site type array (%d) doesn't match replica lattice size (%d)"
                                                       % (len(site_types), sites_per_replica))

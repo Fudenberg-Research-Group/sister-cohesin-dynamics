@@ -52,7 +52,7 @@
             "A": 0.012329450599463753
         }
     },
-    "LEF_separation_bp": 102500,
+    "Total_LEF_per_bp": 0.000009756,
     "mode": "symmetric",
     "region_size_bp": 8000000,
     "bp_per_monomer": 2500,
