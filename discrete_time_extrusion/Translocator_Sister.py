@@ -35,7 +35,10 @@ class Translocator_Sister():
         
         assert len(site_types) == sites_per_replica, ("Site type array (%d) doesn't match replica lattice size (%d)"
                                                       % (len(site_types), sites_per_replica))
+        
+        
         self.time_unit = 1. / (kwargs['sites_per_monomer'] * kwargs['velocity_multiplier'])
+        # 1.25 from single molecule imaging in vitro
         
         lef_arrays = arrays.make_LEF_arrays(xp, type_list, site_types, **kwargs)
         lef_transition_dict = arrays.make_LEF_transition_dict(xp, type_list, site_types, **kwargs)

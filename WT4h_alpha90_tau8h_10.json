@@ -52,13 +52,14 @@
             "A": 0.012329450599463753
         }
     },
-    "LEF_separation": 410,
+    "Total_LEF_per_bp": 0.000009756,
     "mode": "symmetric",
     "sites_per_monomer": 1,
-    "monomers_per_replica": 3200000,
+    "region_size_bp": 800000000,
+    "bp_per_monomer": 250,
     "num_of_sisters": 7764,
     "sister_lifetime": 28800,
-    "sister_damping": 90,
+    "sister_damping_facter": 90,
     "number_of_replica": 1,
     "steps": 65000,
     "dummy_steps": 0,

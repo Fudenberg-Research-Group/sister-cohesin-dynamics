@@ -57,7 +57,7 @@ with open(
 ) as dict_file:
     paramdict_dW = json.load(dict_file)
 
-monomers_per_replica = paramdict_WT['monomers_per_replica'] 
+monomers_per_replica = paramdict_WT['region_size_bp']//paramdict_WT['bp_per_monomer']
 sites_per_monomer = paramdict_WT['sites_per_monomer']
 num_of_sisters = paramdict_WT['num_of_sisters']
 # Work with a single type of monomers (A, assigned to type index 0)
