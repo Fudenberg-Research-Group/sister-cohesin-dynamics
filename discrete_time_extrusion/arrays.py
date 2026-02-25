@@ -59,15 +59,14 @@ def make_CTCF_dynamic_arrays(xp,
                              site_types,
                              CTCF_on_rate,
                              CTCF_off_rate,
-                             sites_per_monomer,
                              velocity_multiplier,
                              **kwargs):
     
     on_rate_array = make_site_array(xp, type_list, site_types, CTCF_on_rate, **kwargs)
     off_rate_array = make_site_array(xp, type_list, site_types, CTCF_off_rate, **kwargs)
     
-    birth_array = on_rate_array / (velocity_multiplier * sites_per_monomer)
-    death_array = off_rate_array / (velocity_multiplier * sites_per_monomer)
+    birth_array = on_rate_array / (velocity_multiplier)
+    death_array = off_rate_array / (velocity_multiplier)
 
     return [birth_array, death_array]
     
@@ -80,7 +79,6 @@ def make_LEF_arrays(xp,
 					LEF_stalled_off_rate,
 					LEF_diffusion_rate,
                     LEF_pause,
-                    sites_per_monomer,
                     velocity_multiplier,
                     **kwargs):
     
@@ -90,11 +88,11 @@ def make_LEF_arrays(xp,
     stalled_off_rate_array = make_site_array(xp, type_list, site_types, LEF_stalled_off_rate, **kwargs)
     diffusion_rate_array = make_site_array(xp, type_list, site_types, LEF_diffusion_rate, **kwargs)
 
-    birth_array = on_rate_array / (velocity_multiplier * sites_per_monomer)
-    death_array = off_rate_array / (velocity_multiplier * sites_per_monomer)
+    birth_array = on_rate_array / (velocity_multiplier)
+    death_array = off_rate_array / (velocity_multiplier)
     
-    stalled_death_array = stalled_off_rate_array / (velocity_multiplier * sites_per_monomer)
-    diffusion_array = diffusion_rate_array / (velocity_multiplier * sites_per_monomer)
+    stalled_death_array = stalled_off_rate_array / (velocity_multiplier)
+    diffusion_array = diffusion_rate_array / (velocity_multiplier)
     
     pause_array = make_site_array(xp, type_list, site_types, LEF_pause, **kwargs)
 
@@ -106,7 +104,6 @@ def make_LEF_transition_dict(xp,
                              site_types,
                              LEF_states,
                              LEF_transition_rates,
-                             sites_per_monomer,
                              velocity_multiplier,
                              **kwargs):
     
@@ -117,6 +114,6 @@ def make_LEF_transition_dict(xp,
 
     for ids, LEF_rate in LEF_transition_rates.items():
         rate_array = make_site_array(xp, type_list, site_types, LEF_rate, **kwargs)
-        transition_dict["LEF_transitions"][ids] = rate_array / (velocity_multiplier * sites_per_monomer)
+        transition_dict["LEF_transitions"][ids] = rate_array / (velocity_multiplier)
 
     return transition_dict

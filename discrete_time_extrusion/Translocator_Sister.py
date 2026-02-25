@@ -29,7 +29,9 @@ class Translocator_Sister():
         else:
             raise RuntimeError("Unrecognized device %s - use either 'CPU' or 'GPU'" % device)
     
-        sites_per_replica = kwargs["region_size_bp"]//kwargs['bp_per_monomer'] * kwargs['sites_per_monomer']
+        
+        # sites_per_replica = kwargs["region_size_bp"]//kwargs['bp_per_monomer'] * kwargs['sites_per_monomer']
+        sites_per_replica = kwargs["region_size_bp"]//kwargs['bp_per_site']
         # number_of_LEFs = (kwargs['number_of_replica'] * kwargs['region_size_bp']) // kwargs['Full_LEF_separation_bp']
         number_of_LEFs = int(kwargs['number_of_replica'] * kwargs["region_size_bp"] * kwargs['Total_LEF_per_bp'])
         
@@ -37,7 +39,8 @@ class Translocator_Sister():
                                                       % (len(site_types), sites_per_replica))
         
         
-        self.time_unit = 1. / (kwargs['sites_per_monomer'] * kwargs['velocity_multiplier'])
+        # self.time_unit = 1. / (kwargs['sites_per_monomer'] * kwargs['velocity_multiplier'])
+        self.time_unit = 1. / kwargs['velocity_multiplier']
         # 1.25 from single molecule imaging in vitro
         
         lef_arrays = arrays.make_LEF_arrays(xp, type_list, site_types, **kwargs)

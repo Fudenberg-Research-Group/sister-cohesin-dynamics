@@ -49,13 +49,15 @@ with open(
 # readpath = '/project2/fudenber_735/xyan/HBD0715/S8h_sweep_0105/Sister_4000_extrude_0_S1'
 savepath = f'/Users/xcyan/Desktop/discrete_extrusion/02082025/tau{tau}h/WT_alpha_{alpha}_tau_{tau}h'
 
-monomers_per_replica = paramdict_WT['region_size_bp']//paramdict_WT['bp_per_monomer']
-sites_per_monomer = paramdict_WT['sites_per_monomer']
+monomers_per_replica = paramdict_WT['region_size_bp']//paramdict_WT['bp_per_site']
+# sites_per_monomer = paramdict_WT['sites_per_monomer']
 num_of_sisters = paramdict_WT['num_of_sisters']
 # Work with a single type of monomers (A, assigned to type index 0)
 type_list = ['A']
 monomer_types = type_list.index('A') * np.ones(monomers_per_replica, dtype=int)
-site_types = np.repeat(monomer_types, sites_per_monomer)
+
+# site_types = np.repeat(monomer_types, sites_per_monomer)
+site_types = np.repeat(monomer_types, 1)
 
 # LEF/CTCF properties in type A monomers may be obtained from the paramdict as follows
 LEF_off_rate = paramdict_WT['LEF_off_rate']
@@ -133,12 +135,14 @@ def run_synchronized_trajectories_continue(translocator1, translocator2, sister_
     
     ## Change 1: decay prob from 1 - exp(-1/lifetime) to 1/lifetime
     # decay_prob = 1 - np.exp(-1 / sister_lifetime)
-    lattice_time_unit = 1. /(translocator1.params['sites_per_monomer'] * translocator1.params['velocity_multiplier'])
+    # lattice_time_unit = 1. /(translocator1.params['sites_per_monomer'] * translocator1.params['velocity_multiplier'])
+    lattice_time_unit = 1. /translocator1.params['velocity_multiplier']
+
     decay_prob = lattice_time_unit / sister_lifetime
-        
     # Calculate total steps needed
     steps = int(steps) if steps else translocator1.params['steps']
-    period = int(period) if period else translocator1.params['sites_per_monomer']
+    # period = int(period) if period else translocator1.params['sites_per_monomer']
+    period = int(period) if period else 1
     dummy_steps = translocator1.params['dummy_steps'] * period
     total_steps = steps * period + dummy_steps
     
