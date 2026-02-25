@@ -62,5 +62,5 @@
     "number_of_replica": 1,
     "steps": 64800,
     "dummy_steps": 0,
-    "velocity_multiplier": 0.8
+    "active_extrusion_rate": 1000
 }

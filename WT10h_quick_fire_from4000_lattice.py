@@ -136,7 +136,7 @@ def run_synchronized_trajectories_continue(translocator1, translocator2, sister_
     ## Change 1: decay prob from 1 - exp(-1/lifetime) to 1/lifetime
     # decay_prob = 1 - np.exp(-1 / sister_lifetime)
     # lattice_time_unit = 1. /(translocator1.params['sites_per_monomer'] * translocator1.params['velocity_multiplier'])
-    lattice_time_unit = 1. /translocator1.params['velocity_multiplier']
+    lattice_time_unit = translocator1.params['time_unit']
 
     decay_prob = lattice_time_unit / sister_lifetime
     # Calculate total steps needed

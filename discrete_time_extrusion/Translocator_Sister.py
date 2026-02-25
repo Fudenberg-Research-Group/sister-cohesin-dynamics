@@ -40,9 +40,12 @@ class Translocator_Sister():
         
         
         # self.time_unit = 1. / (kwargs['sites_per_monomer'] * kwargs['velocity_multiplier'])
-        self.time_unit = 1. / kwargs['velocity_multiplier']
-        # 1.25 from single molecule imaging in vitro
+        # self.time_unit = 1. / kwargs['velocity_multiplier']
+        # 1.25 from single molecule imaging in vitro, 0.25 is the [RN]/[R]
+        self.time_unit = 2 * 0.25 * kwargs['bp_per_site'] /kwargs['active_extrusion_rate']
         
+        kwargs['time_unit'] = self.time_unit
+
         lef_arrays = arrays.make_LEF_arrays(xp, type_list, site_types, **kwargs)
         lef_transition_dict = arrays.make_LEF_transition_dict(xp, type_list, site_types, **kwargs)
         
