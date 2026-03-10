@@ -41,7 +41,7 @@ for alpha in alpha_list:
 
 # read the chemical reaction network parameters from json file 
 with open(
-    f"WT9h_alpha{alpha}_tau{tau}h.json",
+    f"WT9h_alpha{alpha}_tau{tau}h_02252025.json",
     "r",
 ) as dict_file:
     paramdict_WT = json.load(dict_file)
