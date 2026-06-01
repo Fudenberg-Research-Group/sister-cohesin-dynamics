@@ -14,17 +14,5 @@
         "tau_R": 822.0,
         "F_R": 0.65, 
         "N_R": 264
-    },
-    "sister_networks": {
-        "F_W_sister": 0.12028,
-        "F_P_sister": 0.30274
-    },
-    "simulation_parameters": {
-        "depletion_level": 0,
-        "analysis_timepoint_hours": 3, 
-        "num_of_sisters": 2909
-    },
-    "output_directory": "WT3h_sweep_20260413_no_sister_6h",
-    "output_prefix": "WT3h",
-    "output_template_file": "extrusion_dict_RN_RB_RP_RW_HBD_WT.json"
+    }
 }
