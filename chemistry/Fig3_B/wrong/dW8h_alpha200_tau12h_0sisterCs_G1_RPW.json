@@ -1,0 +1,66 @@
+{
+    "CTCF_facestall": {
+        "A": 1.0
+    },
+    "CTCF_backstall": {
+        "A": 0
+    },
+    "CTCF_on_rate": {
+        "A": 0.0233
+    },
+    "CTCF_off_rate": {
+        "A": 0.01
+    },
+    "LEF_on_rate": {
+        "A": 0.0022592978798082488
+    },
+    "LEF_off_rate": {
+        "A": 0.018352450469238793
+    },
+    "LEF_stalled_off_rate": {
+        "A": 0.018352450469238793
+    },
+    "LEF_diffusion_rate": {
+        "A": 0
+    },
+    "LEF_pause": {
+        "A": 0
+    },
+    "LEF_states": {
+        "RN": 1,
+        "RB": 2,
+        "RP": 3,
+        "RW": 4
+    },
+    "LEF_transition_rates": {
+        "21": {
+            "A": 0.007638718026070211
+        },
+        "23": {
+            "A": 0.01974317818062572
+        },
+        "12": {
+            "A": 0.013888888888888888
+        },
+        "32": {
+            "A": 0.013544679058039615
+        },
+        "34": {
+            "A": 0.004049303609899109
+        },
+        "43": {
+            "A": 0.00386977175298343
+        }
+    },
+    "Total_LEF_per_bp": 9.756e-06,
+    "mode": "symmetric",
+    "region_size_bp": 80000000,
+    "bp_per_site": 2500,
+    "num_of_sisters": 0,
+    "sister_lifetime": 43200,
+    "sister_damping_factor": 1,
+    "number_of_replica": 1,
+    "steps": 57600,
+    "dummy_steps": 0,
+    "active_extrusion_rate": 1000
+}

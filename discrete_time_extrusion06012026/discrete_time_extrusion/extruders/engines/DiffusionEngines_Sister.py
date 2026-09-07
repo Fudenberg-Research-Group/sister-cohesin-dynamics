@@ -1,3 +1,6 @@
+
+import numpy as np
+
 def _diffusion_sister_step_cpu(unbound_state_id,
                         rngs,
                         N,
@@ -19,10 +22,14 @@ def _diffusion_sister_step_cpu(unbound_state_id,
 					if rngs[i, 2*j] < diffuse_prob[cur]:
 						if rngs[i, 2*j+1] < 0.5:
 							if (not occupied[cur-1]) and (((j == 0) and not sister_occupied[cur]) or (cur > positions[i, 0])):
+								occupied[cur] = False
+								occupied[cur-1] = True
 								positions[i, j] = cur - 1
 								
 						else:
 							if (not occupied[cur+1]) and (((j == 1) and not sister_occupied[cur]) or (cur < positions[i, 1])):
+								occupied[cur] = False
+								occupied[cur+1] = True
 								positions[i, j] = cur + 1
 
 

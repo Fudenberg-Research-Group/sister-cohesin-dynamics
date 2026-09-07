@@ -1,0 +1,11 @@
+{
+  "python.defaultInterpreterPath": "/Users/xcyan/opt/anaconda3/envs/discrete-extrusion/bin/python",
+  "python.condaPath": "/Users/xcyan/opt/anaconda3/bin/conda",
+  "python.pythonPath": "/Users/xcyan/opt/anaconda3/envs/discrete-extrusion/bin/python",
+  "python.terminal.activateEnvironment": true,
+  "python.formatting.provider": "none",
+  "python.linting.enabled": false,
+  "python.terminal.executeInFileDir": true,
+  "python-envs.defaultEnvManager": "ms-python.python:conda",
+  "python-envs.defaultPackageManager": "ms-python.python:conda"
+}

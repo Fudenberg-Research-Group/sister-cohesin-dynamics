@@ -143,32 +143,28 @@ class BaseExtruder_Sister(NullExtruder.NullExtruder):
 
         self._position_cache_valid = True
 
-
     def update_sister_extruder_coupling(self):
-        """Optimized coupling check with immediate dict sync and safe caching"""
         if self.sister_positions is None: 
             return
-        ## Update position cache for extruders if invalid
+    
+        # Rebuild position cache
         self._update_extruder_position_to_ID_cache()
-       
-        # Find new couplings, first identify uncoupled sisters
-        uncoupled_sisters = self.xp.where(self.coupled_to_extruder == -1)[0]
-        
-        if len(uncoupled_sisters) == 0:
-            return 
-        
-        for sister_id in uncoupled_sisters:
+    
+        # Reset all couplings
+        self.coupled_to_extruder[:] = -1
+        self.coupled_to_sister[:, :] = -1
+        self.extruder_sister_counts[:] = 0
+    
+        # Rebuild from scratch
+        for sister_id in range(len(self.sister_positions)):
             sister_pos = int(self.sister_positions[sister_id])
-            ## if sister pos in the extruder positions, couple them and upadate the coupling info
+            if sister_pos < 0:  # skip invalid sisters
+                continue
             if sister_pos in self._extruder_position_to_ID:
                 extruder_id = self._extruder_position_to_ID[sister_pos][0]
                 self.extruder_sister_counts[extruder_id] += 1
-                ## update coupling info 
                 self.coupled_to_extruder[sister_id] = extruder_id
                 self.coupled_to_sister[extruder_id, int(sister_id)] = int(sister_id)
-            else:
-                continue
-
     
     def birth(self, unbound_state_id):
         """Optimized birth function - unchanged but benefits from improved coupling"""
@@ -289,7 +285,7 @@ class BaseExtruder_Sister(NullExtruder.NullExtruder):
     
         self.update_occupancies()
 
-        ## update sister occuplied, for each lattice whether occupy is trure
+        ## update sister occuplied, for each lattice whether occupy is true
         
         # Parent class step
         super().step(**kwargs)

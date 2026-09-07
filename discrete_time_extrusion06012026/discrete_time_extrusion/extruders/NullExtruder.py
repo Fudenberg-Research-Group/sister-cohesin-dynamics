@@ -56,7 +56,7 @@ class NullExtruder():
         self.occupied.fill(False)
         self.occupied[0] = self.occupied[-1] = True
         
-        #self.resolve_overlaps()
+        self.resolve_overlaps()
         
         ids = self.positions[self.xp.greater_equal(self.positions, 0)]
         self.occupied[ids] = True

@@ -1,0 +1,33 @@
+
+
+{
+    "base_parameters": {
+        "tau_S": 100.0,
+        "F_S": 0.52,
+        "N_S": 79770,
+        "tau_W": 45.0,
+        "F_W": 0.35, 
+        "N_W": 69542,
+        "tau_P": 72,
+        "F_P": 0.42, 
+        "N_P": 180615,
+        "tau_N": 80.0,
+        "F_N": 0.4, 
+        "N_N": 119308,
+        "tau_R_extrusive": 600.0,
+        "F_R_sister": 0.5,
+        "N_R": 284470,
+        "N_R_fraction": 0.6666666666667
+    },
+    "sister_networks": {
+        "F_W_sister": 0.12028,
+        "F_P_sister": 0.30274
+    },
+    "simulation_parameters": {
+        "depletion_level": 0.97,
+        "analysis_timepoint_hours": 11
+    },
+    "output_directory": "dS11h",
+    "output_prefix": "dS11h",
+    "output_template_file": "extrusion_dict_RN_RB_RP_RW_HBD_WT.json"
+}

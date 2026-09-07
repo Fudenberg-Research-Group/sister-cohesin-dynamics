@@ -1,5 +1,7 @@
 import warnings
 
+import numpy as np
+# from .engines.DiffusionEngines_Sister import _diffusion_sister_step_cpu, _diffusion_step_gpu
 from .engines.DiffusionEngines_Sister import _diffusion_sister_step_cpu, _diffusion_step_gpu
 from .engines.SymmetricEngines import _symmetric_step_cpu, _symmetric_step_gpu
 from .engines.AsymmetricEngines import _asymmetric_step_cpu, _asymmetric_step_gpu
@@ -138,16 +140,99 @@ def SteppingEngine(sim, mode, unbound_state_id, active_state_id, threads_per_blo
     
 	elif sim.xp.__name__ == 'numpy':
 		if use_numba:
+			
 			warnings.warn("Running lattice extrusion on the CPU using Numba")
-			numba_engines[mode_key](*args)
-        
+			
+			### Used in DEBUG: Check sister_positions before step
+			# spos_before = sim.sister_positions.copy()
+			# ext_before = sim.positions.copy()
+		    
+			# numba_engines[mode_key](*args)
+			numba_engines[mode_key].py_func(*args)
+			
+			### DEBUG: Check if any sister entered loop during symmetric step
+			# spos_after = sim.sister_positions.copy()
+			# ext_after = sim.positions.copy()
+			# left_after = ext_after[:,0]
+			# right_after = ext_after[:,1]
+			# valid = spos_before >= 0
+			# Find sisters that were OK before but inside loop now
+			# contained_before = ((spos_before[:, None] > ext_before[:,0][None, :]) & (spos_before[:, None] < ext_before[:,1][None, :])).any(axis=1)
+			# contained_after = ((spos_after[:, None] > left_after[None, :]) & (spos_after[:, None] < right_after[None, :])).any(axis=1)
+			# newly_trapped = (contained_after & ~contained_before) & valid
+			# newly_trapped_idx = np.nonzero(newly_trapped)[0]
+			
+			# if newly_trapped_idx.size:
+			#	print(f"\n[DIAGNOSIS] After SYMMETRIC_STEP: {newly_trapped_idx.size} sister(s) newly trapped in loop!")
+			#	for s_idx in newly_trapped_idx:
+			#		s_pos_before = spos_before[s_idx]
+			#		s_pos_after = spos_after[s_idx]
+			#		# Find which extruder trapped her
+			#		ext_idx = np.nonzero((s_pos_after > left_after) & (s_pos_after < right_after))[0]
+			#		# Find if she was coupled
+			#		coupled_to = sim.coupled_to_extruder[s_idx]
+			#		print(f"  sister {s_idx}: {s_pos_before}->{s_pos_after}, coupled_to_extruder={coupled_to}, now inside extruder(s) {ext_idx.tolist()}")
+			#		# Print that extruder's movement
+			#		for ei in ext_idx[:1]:  # Just first one
+			#			print(f"    extruder {ei}: [{ext_before[ei,0]},{ext_before[ei,1]}]->[{ext_after[ei,0]},{ext_after[ei,1]}]")
+            
+			spos = sim.sister_positions
+			valid = spos >= 0 
+			left = sim.positions[:,0]
+			right = sim.positions[:,1]
+			contained = ((spos[:, None] > left[None, :]) & (spos[:, None] < right[None, :])).any(axis=1)
+			contained = contained & valid
+			bad_idx = np.nonzero(contained)[0]
+			if bad_idx.size:
+				print(f"\n[TOTAL] After symmetric_step: {bad_idx.size} sister(s) inside loop")
+
 			sim.update_occupancies()
         
 			sim.occupied_sister.fill(False)
 			ids = sim.sister_positions[sim.xp.greater_equal(sim.sister_positions, 0)]
-			sim.occupied_sister[ids] = True
-
-			numba_engines['diffusion'](*args_diffusion)
+			sim.occupied_sister[ids.astype(np.int32)] = True
+		
+			# Store state before diffusion
+			# spos_before_diff = sim.sister_positions.copy()
+			# ext_before_diff = sim.positions.copy()
+			
+			numba_engines['diffusion'].py_func(*args_diffusion)
+			
+			# Check if diffusion created new trapped sisters
+			# spos_after_diff = sim.sister_positions.copy()
+			# ext_after_diff = sim.positions.copy()
+			
+			# left_after_diff = ext_after_diff[:,0]
+			# right_after_diff = ext_after_diff[:,1]
+			# valid = spos_before_diff >= 0
+			
+			# contained_before_diff = ((spos_before_diff[:, None] > ext_before_diff[:,0][None, :]) & (spos_before_diff[:, None] < ext_before_diff[:,1][None, :])).any(axis=1)
+			# contained_after_diff = ((spos_after_diff[:, None] > left_after_diff[None, :]) & (spos_after_diff[:, None] < right_after_diff[None, :])).any(axis=1)
+			
+			# newly_trapped_diff = (contained_after_diff & ~contained_before_diff) & valid
+			# newly_trapped_diff_idx = np.nonzero(newly_trapped_diff)[0]
+			
+			# if newly_trapped_diff_idx.size:
+			#	print(f"\n[DIAGNOSIS] After DIFFUSION: {newly_trapped_diff_idx.size} sister(s) newly trapped in loop!")
+			#	for s_idx in newly_trapped_diff_idx:
+			#		s_pos_before = spos_before_diff[s_idx]
+			#		s_pos_after = spos_after_diff[s_idx]
+			#		ext_idx = np.nonzero((s_pos_after > left_after_diff) & (s_pos_after < right_after_diff))[0]
+			#		print(f"  sister {s_idx}: {s_pos_before}->{s_pos_after}, inside extruder(s) {ext_idx.tolist()}")
+			#		for ei in ext_idx[:1]:
+			#			print(f"    extruder {ei}: [{ext_before_diff[ei,0]},{ext_before_diff[ei,1]}]->[{ext_after_diff[ei,0]},{ext_after_diff[ei,1]}]")
+		
+			
+			# spos = sim.sister_positions
+			# valid = spos >= 0 
+			# left = sim.positions[:,0]
+			# right = sim.positions[:,1]
+			# contained = ((spos[:, None] > left[None, :]) & (spos[:, None] < right[None, :])).any(axis=1)
+			# contained = contained & valid
+			# bad_idx = np.nonzero(contained)[0]
+			# if bad_idx.size:
+			#	print(f"\n[FINAL] After diffusion: {bad_idx.size} sister(s) remain inside loop")
+				
 			sim.update_occupancies()
 
 		else:
