@@ -25,9 +25,9 @@
     },
     "simulation_parameters": {
         "depletion_level": 0,
-        "analysis_timepoint_hours": 3
+        "analysis_timepoint_hours": 8
     },
-    "output_directory": "WT3h",
-    "output_prefix": "WT3h",
+    "output_directory": "WT12h",
+    "output_prefix": "WT12h",
     "output_template_file": "extrusion_dict_RN_RB_RP_RW_HBD_WT.json"
 }

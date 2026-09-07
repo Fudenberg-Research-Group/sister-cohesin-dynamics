@@ -170,7 +170,7 @@ def run_simulation(config, residence_time, sister_damping, collision_release_pro
 def main():
     """Main execution function"""
     # Load configuration
-    config = load_config('network_parameters_WT3h.json')
+    config = load_config('network_parameters_WT7h.json')
     
     # Create output directory
     output_dir = Path(config['output_directory'])

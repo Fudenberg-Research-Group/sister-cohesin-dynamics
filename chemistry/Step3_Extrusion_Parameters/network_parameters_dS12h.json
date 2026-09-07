@@ -27,7 +27,7 @@
         "depletion_level": 0.97,
         "analysis_timepoint_hours": 11
     },
-    "output_directory": "dS11h",
-    "output_prefix": "dS11h",
+    "output_directory": "dS12h",
+    "output_prefix": "dS12h",
     "output_template_file": "extrusion_dict_RN_RB_RP_RW_HBD_WT.json"
 }

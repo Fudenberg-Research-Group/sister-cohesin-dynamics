@@ -214,7 +214,7 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
 def main():
     """Main execution function"""
     # Load configuration
-    config = load_config('network_parameters_dS11h.json')
+    config = load_config('network_parameters_dS12h.json')
     
     # Create output directory
     output_dir = SCRIPT_DIR / config['output_directory']
