@@ -1,4 +1,4 @@
-# sister_discrete_translocator
+# Sister cohesin dnamics
 
 A multiscale framework connecting cohesin biochemistry, sister-chromatid dynamics, and 3D chromosome folding.
 
