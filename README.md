@@ -1,6 +1,6 @@
 # sister_discrete_translocator
 
-![workflow overview](docs/workflow.svg)
+![workflow overview](docs/Cartoon_Schematic.png)
 
 **Illustration**: Kinetic parameters fit to *in vivo* cohesin/regulator binding data (`chemistry/`) are used to drive a 1D lattice model of loop extrusion and cohesion maintainance (`discrete_time_extrusion_sister/`), whose trajectories are then placed onto a 3D HOOMD polymer model to simulate large-scale chromatid organization (`polymer_sister_chromatids/`). A separate side sweep (`Sweep_S8h/`) reuses the same polymer stage to explore sister-crosslink density and misalignment without sister-lifecycle coupling.
 
