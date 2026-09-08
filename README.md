@@ -37,13 +37,13 @@ Polymer simulations are implemented using HOOMD-blue and polychrom-hoomd and inc
 
 ## Attribution
 
-The original non-sister `Translocator` and `MultistateExtruder` classes used in this repository are derived from the Fudenberg Research Group's discrete-time loop-extrusion framework:
+The loop-extrusion implementation builds on the discrete-time extrusion framework:
 
 [Fudenberg-Research-Group/discrete-time-extrusion](https://github.com/Fudenberg-Research-Group/discrete-time-extrusion)
 
-(Tortora et al., *The physical chemistry of interphase loop extrusion* ([Cell Genomics, 2025](https://doi.org/10.1016/j.xgen.2025.101098)).
+See, Tortora et al., *The physical chemistry of interphase loop extrusion* ([Cell Genomics, 2025](https://doi.org/10.1016/j.xgen.2025.101098)).
 
-This framework extends this framework with sister-chromatid-aware classes (`Translocator_Sister`, `MultistateExtruder_Sister`, and `sister_lifecycle.py`) to jointly simulate loop extrusion and sister-chromatid cohesion.
+This work develops a multiscale framework for sister-chromatid cohesion that couples biochemical regulation of sister-linking and loop-extruding cohesins to their dynamics and encounters on paired sister chromatids and to 3D polymer simulations of sister chromosome folding.
 
 ## Code availability
 
