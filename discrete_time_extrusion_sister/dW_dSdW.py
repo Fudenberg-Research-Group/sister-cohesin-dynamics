@@ -20,7 +20,7 @@ CONDITIONS = {
     "dS_dSdW": ("dS7h", "dSdW"),
 }
 
-condition_name = "dS_dSdW" 
+condition_name = "WT_dW" 
 condition_phase1, condition_phase2 = CONDITIONS[condition_name]
 
 # Local test: process_id set manually.
@@ -122,7 +122,7 @@ paramdict_phase2['time_unit'] = translocator1.params['time_unit']
 run_synchronized_trajectories_continue(
     translocator1, translocator2,
     paramdict_phase1['sister_lifetime'],
-    steps = 10, 
+    steps = 500, 
     prune_unbound_LEFs = True,
     track_sisters = True,
     sample_interval = 10,

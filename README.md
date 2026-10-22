@@ -1,4 +1,4 @@
-# Sister cohesin dnamics
+# Sister cohesin dynamics
 
 A multiscale framework connecting cohesin biochemistry, sister-chromatid dynamics, and 3D chromosome folding.
 
