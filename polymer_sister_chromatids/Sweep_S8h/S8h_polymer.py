@@ -13,6 +13,7 @@ import hoomd
 import codecs
 import time
 import numpy as np
+import itertools
 
 import gsd.hoomd
 import polychrom_hoomd.log as log
@@ -22,38 +23,30 @@ import polychrom_hoomd.extrude as extrude
 
 # Initialise HooMD on the CPU or GPU, based on availability
 hoomd_device = build.get_hoomd_device()
-
 process_id = int(sys.argv[1])-1
 
+number_of_monomers = 320000
+kb_per_monomer = 2.5       # 320000 monomers = 800 Mb
+
+sigma_kb_list = [50, 75, 100, 125, 150, 175]      # misalignment sigma, in kb
 sister_sep = [200, 225, 250, 275, 300, 325, 350, 375, 400]
 num_sister_RAD21_list = [round(800000 / s) for s in sister_sep]
-
 replica_ids = np.arange(5)
 
-# Use index instead of value
-sep_indices = np.arange(len(sister_sep))
+parameters = list(itertools.product(
+    range(len(sigma_kb_list)), range(len(sister_sep)), replica_ids))
+sigma_idx, sep_idx, iteration = parameters[process_id]
 
-x, y = np.meshgrid(sep_indices, replica_ids)
-parameters = list(zip(x.flatten(), y.flatten()))
+sigma_kb = sigma_kb_list[sigma_idx]
+sigma_offset = sigma_kb / kb_per_monomer 
 
-sep_idx, iteration = parameters[process_id]
-
-# Now everything is recoverable
 sep_value = sister_sep[sep_idx]
 num_sister = num_sister_RAD21_list[sep_idx]
 
-print("sep_value:", sep_value)
-print("num_sister:", num_sister)
-print("replica:", iteration)
-
-
-sigma_offset = 50          # misalignment sigma, in monomers
-kb_per_monomer = 2.5       # same lattice resolution as polymer stage (320000 monomers = 800 Mb)
-sigma_kb = int(sigma_offset * kb_per_monomer)   # -> 125, used for output folder naming
+print("sigma_kb:", sigma_kb, "sep_value:", sep_value, "num_sister:", num_sister, "replica:", iteration)
 
 readpath = '../input/Sister_4000_extrude_0_S1'
 savepath = f'output/sigma{sigma_kb}/sep{sep_value}'
-
 os.makedirs(savepath, exist_ok=True)
 
 rng_seed = os.urandom(2)
@@ -91,7 +84,6 @@ density = 0.4
 # single chromsome size is 320000 monomer
 # 320000*2.5kb/Monomer = 800Mb 
 chromosome_sizes = [320000]
-number_of_monomers = sum(chromosome_sizes)
 number_of_monomers_whole = 2*number_of_monomers
 confinement_radius = (3*number_of_monomers_whole / (4*np.pi*density))**(1/3.)
 

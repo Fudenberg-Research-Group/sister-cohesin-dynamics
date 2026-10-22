@@ -10,6 +10,7 @@ import os
 import json
 import codecs
 import numpy as np
+import itertools
 
 from discrete_time_extrusion.Translocator import Translocator
 from discrete_time_extrusion.boundaries.StaticBoundary import StaticBoundary
@@ -120,34 +121,26 @@ def crosslink_chains_gaussian_misalign(N_monomers, iteration, N_crosslinks, sigm
 process_id = int(sys.argv[1])-1
 
 number_of_monomers = 320000
+kb_per_monomer = 2.5       # 320000 monomers = 800 Mb
+
+sigma_kb_list = [50, 75, 100, 125, 150, 175]      # misalignment sigma, in kb
 sister_sep = [200, 225, 250, 275, 300, 325, 350, 375, 400]
 num_sister_RAD21_list = [round(800000 / s) for s in sister_sep]
-
 replica_ids = np.arange(5)
 
-# Use index instead of value
-sep_indices = np.arange(len(sister_sep))
+parameters = list(itertools.product(
+    range(len(sigma_kb_list)), range(len(sister_sep)), replica_ids))
+sigma_idx, sep_idx, iteration = parameters[process_id]
 
-x, y = np.meshgrid(sep_indices, replica_ids)
-parameters = list(zip(x.flatten(), y.flatten()))
+sigma_kb = sigma_kb_list[sigma_idx]
+sigma_offset = sigma_kb / kb_per_monomer 
 
-sep_idx, iteration = parameters[process_id]
-
-# Now everything is recoverable
 sep_value = sister_sep[sep_idx]
 num_sister = num_sister_RAD21_list[sep_idx]
 
-print("sep_value:", sep_value)
-print("num_sister:", num_sister)
-print("replica:", iteration)
-
-
-sigma_offset = 50          # misalignment sigma, in monomers
-kb_per_monomer = 2.5       # same lattice resolution as polymer stage (320000 monomers = 800 Mb)
-sigma_kb = int(sigma_offset * kb_per_monomer)   # -> 125, used for output folder naming
+print("sigma_kb:", sigma_kb, "sep_value:", sep_value, "num_sister:", num_sister, "replica:", iteration)
 
 savepath = f'output/sigma{sigma_kb}/sep{sep_value}'
-
 os.makedirs(savepath, exist_ok=True)
 
 rng_seed = os.urandom(2)

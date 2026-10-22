@@ -39,6 +39,7 @@ iteration = replica_ids[process_id]
 readpath = 'input/Sister_4000_extrude_0_S1'
 
 savepath = f'output/{condition}_alpha_{alpha}_tau_{tau}h_beta0_gamma0'
+os.makedirs(savepath, exist_ok=True)
 
 read_traj_path = f'../discrete_time_extrusion_sister/output/tau11h/{condition}_alpha_100_tau_11h_beta0_gamma0'
 
