@@ -47,4 +47,8 @@ This work develops a multiscale framework for sister-chromatid cohesion that cou
 
 ## Code availability
 
-Code used in this study is publicly available in this repository.
+Code used in this study is publicly available in this repository. 
+**Associated publication:**
+> Yan, X., Tortora, M., Goloborodko, A., Fudenberg, G.
+> Chromosome folding encodes mechanisms of cohesion maintenance.
+> Manuscript in preparation (2026).
