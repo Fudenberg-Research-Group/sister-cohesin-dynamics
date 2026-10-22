@@ -50,7 +50,7 @@ and `Translocator_Sister.py` for the exact keys consumed.
 **Anchor files** (`input/anchor_2909_{iteration}_sister1.txt` /
 `sister2.txt`): initial sister-cohesin positions per replica/iteration.
 These come from a separate sweeping of misalignment and linker
-density parameters and identifying the fit to expermental scsHi-C at G2-0h—
+density parameters and identifying the fit to experimental scsHi-C at G2-0h—
 not generated inside this repo. 
 
 **One example replica (`iteration = 0`) is included here.** The scripts default
