@@ -117,15 +117,14 @@ paramdict_phase1['time_unit'] = translocator1.params['time_unit']
 paramdict_phase2['time_unit'] = translocator1.params['time_unit']
 
 # Full run should use steps = 86400 (6h * 3600s / 0.25s per step).
-# steps = 10 here is for local testing only
 
 run_synchronized_trajectories_continue(
     translocator1, translocator2,
     paramdict_phase1['sister_lifetime'],
-    steps = 500, 
+    steps = 86400, 
     prune_unbound_LEFs = True,
     track_sisters = True,
-    sample_interval = 10,
+    sample_interval = 100,
     seed = 42,
     clear_trajectories = True  # Start fresh
 )
@@ -135,15 +134,14 @@ update(translocator2, paramdict_phase2, type_list, site_types)
 
 # Second run - continue from where we left off
 # Full run should use steps = 144000 (10h*3600 / 0.25s per step).
-# steps = 10 here is for local testing only.
 
 run_synchronized_trajectories_continue(
    translocator1, translocator2, 
    paramdict_phase2['sister_lifetime'],
-   steps = 10,   
+   steps = 144000,   
    prune_unbound_LEFs = False,
    track_sisters = True,
-   sample_interval = 10, 
+   sample_interval = 100, 
    seed = 123,
    clear_trajectories = False  # Keep existing data
 )

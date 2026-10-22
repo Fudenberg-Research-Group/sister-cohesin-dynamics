@@ -104,16 +104,15 @@ translocator2 = Translocator_Sister(MultistateExtruder_Sister,
 
 paramdict_phase['time_unit'] = translocator1.params['time_unit']
 
-# Full run should use steps = 86400 (6h * 3600s / 0.25s per step).
-# steps = 10 here is for local testing only
+# Full run should use steps = 46080 (16h * 3600s / 1.25s per step).
 
 run_synchronized_trajectories_continue(
     translocator1, translocator2,
     paramdict_phase['sister_lifetime'],
-    steps = 10, 
+    steps = 46080, 
     prune_unbound_LEFs = True,
     track_sisters = True,
-    sample_interval = 10,
+    sample_interval = 100,
     seed = 42,
     clear_trajectories = True  # Start fresh
 )
