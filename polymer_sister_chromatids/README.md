@@ -4,7 +4,7 @@
 
 Takes the linker and extruder configurations from the lattice stage in
 `../discrete_time_extrusion_sister/` and places them on a two-chromatid polymer
-model, then runs HOOMD-blue / polychrom-hoomd molecular dynamics.
+model, then runs molecular dynamics using polychrom-hoomd.
 Sister-linking cohesins become inter-chromatid bonds (`Sister`), loop-extruding
 cohesins become bonds between the two extruder legs (`LEF`).
 
@@ -58,23 +58,15 @@ independently on each chromatid.
 | Replicas | 5 |
 
 ```bash
-python S8h_lattice.py $SLURM_ARRAY_TASK_ID        # --array=1-270, run first
-python S8h_polymer.py $SLURM_ARRAY_TASK_ID        # --array=1-270
+python S8h_lattice.py $SLURM_ARRAY_TASK_ID        # --array=1-270, run lattice simulations first
+python S8h_polymer.py $SLURM_ARRAY_TASK_ID        # --array=1-270, run polymer simulations then
 ```
 
-Stage 1 writes the anchor and LEF positions as text files; stage 2 reads them
+Stage 1 writes the linker and LEF positions as text files; stage 2 reads them
 and runs the polymer simulation. Both derive `(sigma, separation, replica)` from
 the same array index, so they must be run over the same range and their
 parameter blocks kept identical.
 
-## Input not included here
-
-`input/Sister_4000_extrude_0_S1/trajectory_4000_{i}.gsd` — the relaxed
-two-chromatid structures every run starts from, too large to version. See the
-data availability statement in the accompanying manuscript.
-
-The lattice `.pkl` files are produced by running `WT_dS.py` / `dW_dSdW.py` in
-`../discrete_time_extrusion_sister/` (`*.pkl` is gitignored).
 
 ## Environment
 
