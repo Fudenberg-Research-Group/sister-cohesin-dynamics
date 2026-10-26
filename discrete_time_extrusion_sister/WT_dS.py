@@ -1,15 +1,22 @@
+"""Run lattice simulations for WT or dSORORIN.
 
+The script loads condition-specific biochemical parameters and paired linker
+anchors, then writes synchronized extrusion trajectories for both chromatids.
+"""
+
+import json
 import os
+import pickle
 import sys
 import time
-import json
-import pickle
+
 import numpy as np
 
 from discrete_time_extrusion.Translocator_Sister import Translocator_Sister
 from discrete_time_extrusion.boundaries.StaticBoundary import StaticBoundary
-from discrete_time_extrusion.extruders.MultistateExtruder_Sister import MultistateExtruder_Sister
-
+from discrete_time_extrusion.extruders.MultistateExtruder_Sister import (
+    MultistateExtruder_Sister
+)
 from discrete_time_extrusion.sister_lifecycle import (
     run_synchronized_trajectories_continue,
 )
@@ -19,129 +26,124 @@ CONDITIONS = {
     "dS": "dS12h",
 }
 
-condition_name = "dS" 
-condition_phase = CONDITIONS[condition_name]
 
-# Local test: process_id set manually.
-# For cluster job array, use: process_id = int(sys.argv[1]) - 1
-process_id = 0 
+def main():
+    condition_name = "dS"
+    condition_phase = CONDITIONS[condition_name]
+    # Local test: process_id set manually.
+    # For cluster job array, use: process_id = int(sys.argv[1]) - 1
+    process_id = 0
+    tau = 11
+    sister_dampings = 100
+    collision_prob_index = 0
+    bypass_index = 0
 
-tau = 11
+    replica_ids = np.arange(5)
 
-sister_dampings = 100
+    iteration = replica_ids[process_id]
 
-collision_prob_index = 0
+    savepath = (
+        f"output/tau{tau}h/"
+        f"{condition_phase}_alpha_{sister_dampings}_tau_{tau}h_"
+        f"beta{collision_prob_index}_gamma{bypass_index}/"
+    )
+    os.makedirs(savepath, exist_ok=True)
+    print(f'Created (or exists): {savepath}')
 
-bypass_index = 0 
+    parameter_path = (
+        "../chemistry/Step3_Extrusion_Parameters/"
+        f"{condition_phase}/"
+        f"{condition_phase}_alpha{sister_dampings}_tau{tau}h_"
+        f"beta{collision_prob_index}_gamma{bypass_index}.json"
+    )
 
-base_savepath = f'output/tau{tau}h'
+    with open(parameter_path, "r") as dict_file:
+        paramdict_phase = json.load(dict_file)
 
-replica_ids = np.arange(5)
+    monomers_per_replica = paramdict_phase['region_size_bp']//paramdict_phase['bp_per_site']
+    num_of_sisters = paramdict_phase['num_of_sisters']
+    # Work with a single type of monomers (A, assigned to type index 0)
+    type_list = ['A']
+    monomer_types = type_list.index('A') * np.ones(monomers_per_replica, dtype=int)
+    site_types = np.repeat(monomer_types, 1)
 
-iteration = replica_ids[process_id]
+    # No CTCF boundary sites are included in the current simulations.
+    ctcf_left_positions = []
+    ctcf_right_positions = []
 
-savepath = f'output/tau{tau}h/{condition_phase}_alpha_{sister_dampings}_tau_{tau}h_beta{collision_prob_index}_gamma{bypass_index}/'
-os.makedirs(savepath, exist_ok=True)
-print(f'Created (or exists): {savepath}')
+    np.save(f"{savepath}/ctcf_left_positions_full.npy", ctcf_left_positions)
+    np.save(f"{savepath}/ctcf_right_positions_full.npy", ctcf_right_positions)
 
-with open(
-    f"../chemistry/Step3_Extrusion_Parameters/{condition_phase}/{condition_phase}_alpha{sister_dampings}_tau{tau}h_beta{collision_prob_index}_gamma{bypass_index}.json",
-    "r",
-) as dict_file:
-    paramdict_phase = json.load(dict_file)
+    start = time.time()
 
-monomers_per_replica = paramdict_phase['region_size_bp']//paramdict_phase['bp_per_site']
-num_of_sisters = paramdict_phase['num_of_sisters']
-# Work with a single type of monomers (A, assigned to type index 0)
-type_list = ['A']
-monomer_types = type_list.index('A') * np.ones(monomers_per_replica, dtype=int)
-site_types = np.repeat(monomer_types, 1)
+    common_sisters1 = np.loadtxt(f"input/anchor_2909_{iteration}_sister1.txt")
+    common_sisters2 = np.loadtxt(f"input/anchor_2909_{iteration}_sister2.txt")
 
-# LEF/CTCF properties in type A monomers may be obtained from the paramdict as follows
-LEF_off_rate = paramdict_phase['LEF_off_rate']
-CTCF_facestall = paramdict_phase['CTCF_facestall']
+    if num_of_sisters < len(common_sisters1):
+        np.random.seed(iteration)  # reproducible per-replica subsample
+        sample_idx = np.random.choice(len(common_sisters1), size=num_of_sisters, replace=False)
+        common_sisters1 = common_sisters1[sample_idx]
+        common_sisters2 = common_sisters2[sample_idx]
 
-print(LEF_off_rate['A'], CTCF_facestall['A'])
+    translocator1 = Translocator_Sister(
+        MultistateExtruder_Sister,
+        StaticBoundary,
+        type_list,
+        site_types,
+        ctcf_left_positions,
+        ctcf_right_positions,
+        initial_sister_positions=common_sisters1,
+        **paramdict_phase,
+    )
 
-## Can also specify CTCF positions here if desired; left and rights are for two anchor sites. 
-ctcf_left_positions = []
-ctcf_right_positions = []
+    translocator2 = Translocator_Sister(
+        MultistateExtruder_Sister,
+        StaticBoundary,
+        type_list,
+        site_types,
+        ctcf_left_positions,
+        ctcf_right_positions,
+        initial_sister_positions=common_sisters2 - monomers_per_replica,
+        **paramdict_phase,
+    )
 
-np.save(f"{savepath}/ctcf_left_positions_full.npy", ctcf_left_positions)
-np.save(f"{savepath}/ctcf_right_positions_full.npy", ctcf_right_positions)
+    paramdict_phase['time_unit'] = translocator1.params['time_unit']
 
-start = time.time()
+    # Full run should use steps = 46080 (16h * 3600s / 1.25s per step).
+    run_synchronized_trajectories_continue(
+        translocator1, translocator2,
+        paramdict_phase['sister_lifetime'],
+        steps=46080,
+        prune_unbound_LEFs=True,
+        track_sisters=True,
+        sample_interval=100,
+        seed=42,
+        clear_trajectories=True,
+    )
 
-# common_sisters = np.random.choice(np.arange(monomers_per_replica), size = num_of_sisters, replace=False)
-common_sisters1 = np.loadtxt(f"input/anchor_2909_{iteration}_sister1.txt")
-common_sisters2 = np.loadtxt(f"input/anchor_2909_{iteration}_sister2.txt")
+    end = time.time()
+    print(f"Run time: {end - start:.2f} seconds")
 
-if num_of_sisters < len(common_sisters1):
-    np.random.seed(iteration)  # reproducible per-replica subsample
-    sample_idx = np.random.choice(len(common_sisters1), size=num_of_sisters, replace=False)
-    common_sisters1 = common_sisters1[sample_idx]
-    common_sisters2 = common_sisters2[sample_idx]
+    with open(f"{savepath}/{condition_phase}_trajectory1_{iteration}.pkl", 'wb') as f:
+        pickle.dump({
+            "sister": translocator1.sister_trajectory,
+            "lef": translocator1.lef_trajectory,
+            "ctcf": translocator1.ctcf_trajectory,
+            "state": translocator1.state_trajectory,
+            "coupling": translocator1.coupling_trajectory,
+        }, f)
 
+    with open(f"{savepath}/{condition_phase}_trajectory2_{iteration}.pkl", 'wb') as f:
+        pickle.dump({
+            "sister": translocator2.sister_trajectory,
+            "lef": translocator2.lef_trajectory,
+            "ctcf": translocator2.ctcf_trajectory,
+            "state": translocator2.state_trajectory,
+            "coupling": translocator2.coupling_trajectory,
+        }, f)
 
-translocator1 = Translocator_Sister(MultistateExtruder_Sister,
-                            StaticBoundary,
-                            type_list, 
-                            site_types,
-                            ctcf_left_positions,
-                            ctcf_right_positions, 
-                            initial_sister_positions = common_sisters1, 
-                            **paramdict_phase)
-
-translocator2 = Translocator_Sister(MultistateExtruder_Sister,
-                            StaticBoundary,
-                            type_list, 
-                            site_types,
-                            ctcf_left_positions,
-                            ctcf_right_positions, 
-                            initial_sister_positions = common_sisters2 - monomers_per_replica, 
-                            **paramdict_phase)
-
-
-paramdict_phase['time_unit'] = translocator1.params['time_unit']
-
-# Full run should use steps = 46080 (16h * 3600s / 1.25s per step).
-
-run_synchronized_trajectories_continue(
-    translocator1, translocator2,
-    paramdict_phase['sister_lifetime'],
-    steps = 46080, 
-    prune_unbound_LEFs = True,
-    track_sisters = True,
-    sample_interval = 100,
-    seed = 42,
-    clear_trajectories = True  # Start fresh
-)
-
-
-end = time.time()
-print(f"Run time: {end - start:.2f} seconds")
-
-with open(f"{savepath}/{condition_phase}_trajectory1_{iteration}.pkl", 'wb') as f:
-    pickle.dump({
-        "sister": translocator1.sister_trajectory,
-        "lef": translocator1.lef_trajectory,
-        "ctcf": translocator1.ctcf_trajectory,
-        "state": translocator1.state_trajectory, 
-        "coupling": translocator1.coupling_trajectory, 
-    }, f)
-
-with open(f"{savepath}/{condition_phase}_trajectory2_{iteration}.pkl", 'wb') as f:
-    pickle.dump({
-        "sister": translocator2.sister_trajectory,
-        "lef": translocator2.lef_trajectory,
-        "ctcf": translocator2.ctcf_trajectory,
-        "state": translocator2.state_trajectory, 
-        "coupling": translocator2.coupling_trajectory, 
-    }, f)
-
-print("Sister, LEF, CTCF, state, coupling trajectory saved!")
+    print("Sister, LEF, CTCF, state, coupling trajectory saved!")
 
 
-
-
-
+if __name__ == "__main__":
+    main()
