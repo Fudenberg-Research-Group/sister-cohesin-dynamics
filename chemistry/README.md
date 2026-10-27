@@ -1,9 +1,13 @@
-# chemistry/ — cohesin kinetics identification pipeline
+# chemistry/ Cohesin biochemical kinetics
 
 Three-step pipeline that derives the kinetic parameters for the loop-extruding and sister-linking cohesins
 used by the lattice simulation in `../discrete_time_extrusion_sister/`.
 
-![workflow overview](../docs/Biochemistry_Schematic.png)
+<p align="center">
+  <img src="../docs/Biochemistry_Schematic.png"
+       alt="Cohesin biochemical kinetics workflow"
+       width="650">
+</p>
 
 ```
 chemistry/
@@ -32,9 +36,9 @@ cohesive network** (PDS5, WAPL, Sororin binding + RAD21 unloading) and the
 solved for steady-state rate expressions, then evaluated over a grid of
 `(x, y)` = (fraction WAPL bound, fraction PDS5 bound at the linkers) to find
 the region where every solved rate is positive (the physically valid
-"feasible region"). The centroid of that region — currently
-`(x, y) ≈ (0.12028, 0.30274)` — is the fitted operating point used
-everywhere downstream.
+"feasible region"). The centroid of that region
+`(x, y) ≈ (0.12028, 0.30274)` is selected as the parameter point for downstream
+calculations.
 
 - **Input:** `parameters_10h.json` — base network parameters. `Step2_Kinetics/` reads it from here too.
 - **Output:** centroid of the feasible region.
@@ -130,5 +134,3 @@ needs:
 - `sympy` (symbolic CRN solving, all three steps)
 - `tellurium` (ODE simulation via Antimony/RoadRunner, Step2 and Step3)
 - `pandas` (Step3)
-
-These aren't required by `discrete_time_extrusion_sister/`.
