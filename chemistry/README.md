@@ -6,7 +6,7 @@ used by the lattice simulation in `../discrete_time_extrusion_sister/`.
 <p align="center">
   <img src="../docs/Biochemistry_Schematic.png"
        alt="Cohesin biochemical kinetics workflow"
-       width="650">
+       width="800">
 </p>
 
 ```
