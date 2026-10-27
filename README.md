@@ -2,7 +2,7 @@
 
 A multiscale framework connecting cohesin biochemistry, sister-chromatid dynamics, and 3D chromosome folding.
 
-![workflow overview](docs/Cartoon_Schematic.png)
+![workflow overview](docs/Model_Schematic.png)
 
 **Overview**: The framework connects biochemical kinetics of cohesin regulation (chemistry/) to cohesin transport and encounters on sister-chromatid lattices (discrete_time_extrusion_sister/), and maps the resulting cohesin configurations onto 3D polymer simulations of sister chromosome folding (polymer_sister_chromatids/).
 

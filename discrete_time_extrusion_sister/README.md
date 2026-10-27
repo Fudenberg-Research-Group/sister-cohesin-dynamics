@@ -62,6 +62,27 @@ dSdW case), the scripts randomly subsample `num_of_sisters` of them
 (same indices for both sister files, seeded by `iteration` for
 reproducibility).
 
+## Why one phase or two
+
+The two run scripts correspond to two different experimental designs.
+
+`WT_dS.py` runs a **single phase**: one condition's kinetics apply throughout.
+This matches experiments in which the perturbation is present from the start,
+so a single set of rates (evaluated at 12 h) describes the whole trajectory.
+
+`dW_dSdW.py` runs **two phases**: it starts under the pre-depletion condition
+(`WT7h` or `dS7h`), then `update()` replaces every rate array with the
+post-depletion condition (`dW` or `dSdW`) and the *same* translocators continue
+from there. This mirrors experiments in which WAPL is depleted partway through
+G2 rather than from the outset.
+
+The distinction matters mechanistically, not just bookkeeping-wise: because the
+switch is applied to the existing lattice state (`clear_trajectories=False`),
+the loops and linkers present at the moment of depletion persist across it, as
+they would experimentally. Running two independent simulations instead would
+discard that history. `prune_unbound_LEFs` is correspondingly `True` in phase 1
+(to reach a steady state) and `False` in phase 2.
+
 ## Running a simulation
 
 Both scripts run one replica at a time, selected via `process_id`
