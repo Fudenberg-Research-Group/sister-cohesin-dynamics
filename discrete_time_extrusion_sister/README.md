@@ -4,6 +4,8 @@ Sister-chromatid-aware loop-extrusion simulation.  1D lattice LEF model with "si
 chromatids, so that cohesin loop extrusion and sister-chromatid cohesion
 can be simulated together.
 
+![Workflow overview](../docs/Lattice_Schematic.png)
+
 ## Repo layout
 
 ```
@@ -51,10 +53,10 @@ and `Translocator_Sister.py` for the exact keys consumed.
 `sister2.txt`): initial sister-cohesin positions per replica/iteration.
 These come from a separate sweeping of misalignment and linker
 density parameters and identifying the fit to experimental scsHi-C at G2-0h—
-not generated inside this repo. 
+not generated inside this repo.
 
 **One example replica (`iteration = 0`) is included here.** The scripts default
-to `process_id = 0` and therefore run out of the box against it. 
+to `process_id = 0` and therefore run out of the box against it.
 
 If `num_of_sisters` in the condition's
 JSON is smaller than the number of positions in the anchor file (the dS/
