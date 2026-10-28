@@ -30,7 +30,7 @@ from scipy.spatial import cKDTree
 
 # --- what to analyse -----------------------------------------------------
 CONDITION = "WT12h"
-ALPHA_LIST = [50000]
+ALPHA_LIST = [100]
 TAU_LIST = [11]
 NUMBER_TRIALS = 5          # replicas, 0-indexed
 

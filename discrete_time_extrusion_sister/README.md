@@ -140,8 +140,6 @@ The step counts differ because `bp_per_site` differs between the condition
 families (2500 vs 500), so one lattice step is 1.25 s in the 12h conditions and
 0.25 s in the 7h ones.
 ````
-
-
 ## Output
 
 Each run writes to `output/tau{tau}h/{condition}_alpha_{...}_tau_{...}h_beta{...}_gamma{...}/`:
