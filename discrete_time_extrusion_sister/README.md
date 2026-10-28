@@ -29,10 +29,10 @@ discrete_time_extrusion_code/
 ```
 
 The parameter JSON files are in one level above this folder, in
-`../chemistry/Step2_Generate_dicts/{condition}/{condition}_alpha{...}_tau{...}h_beta{...}_gamma{...}.json`
-(e.g. `../chemistry/Step2_Generate_dicts/WT3h/WT3h_alpha100_tau11h_beta0_gamma0.json`).
-These are produced upstream (Step 1/Step 2 of the parameter-fitting
-pipeline, not part of this repo) and are not regenerated here.
+`../chemistry/Step3_Extrusion_Parameters/{condition}/{condition}_alpha{...}_tau{...}h_beta{...}_gamma{...}.json`
+(e.g. `../chemistry/Step3_Extrusion_Parameters/WT7h/WT7h_alpha100_tau11h_beta0_gamma0.json`).
+These are produced upstream (Step 3 of the parameter-fitting
+pipeline).
 
 
 ## Environment
@@ -46,7 +46,7 @@ conda activate discrete-extrusion
 
 ## Input data
 
-**Config JSON** (one per condition, e.g. `WT3h`, `dS7h`, `dW`, `dSdW`):
+**Config JSON** (one per condition, e.g. `WT7h`, `dS7h`, `dW`, `dSdW`):
 holds the physical/simulation parameters read via `**paramdict` in
 `Translocator_Sister`, including region size, LEF on/off/diffusion rates,
 CTCF stall probabilities, sister lifetime/damping/bypass probability,
@@ -111,7 +111,7 @@ parameters (`update()`) and continues as "phase 2":
 
 ```python
 CONDITIONS = {
-    "WT_dW": ("WT3h", "dW"),
+    "WT_dW": ("WT7h", "dW"),
     "dS_dSdW": ("dS7h", "dSdW"),
 }
 condition_name = "WT_dW"   # or "dS_dSdW"
@@ -126,10 +126,11 @@ python WT_dS.py
 python dW_dSdW.py
 ```
 
-`steps` is currently hardcoded to `10` in both scripts for local
-smoke-testing. For a full run, see the derivation comments above each
-`run_synchronized_trajectories_continue(...)` call (production values:
-86400 / 144000 depending on phase).
+The run lengths are specified explicitly in the two entry scripts.
+`WT_dS.py` runs a single 16 h phase for 46,080 lattice steps.
+`dW_dSdW.py` runs 86,400 steps for the 6 h pre-depletion phase, followed by
+144,000 steps for the 10 h post-depletion phase. The different step counts
+reflect the condition-specific lattice time resolution.
 
 ## Output
 

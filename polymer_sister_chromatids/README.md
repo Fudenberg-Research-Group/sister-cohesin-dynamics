@@ -14,7 +14,7 @@ polymer_sister_chromatids/
 ├── dW_dSdW_polymer.py        # dW, dSdW
 ├── data/
 │   └── force_dict_sister_extruder.json   # force parameters
-├── input/                    # pre-equilibrated configurations (not in repo)
+├── input/                    # example pre-equilibrated configuration (replica 0)
 ├── output/                   # created per run
 └── Sweep_S8h/                # standalone density x misalignment sweep
     ├── S8h_lattice.py
@@ -31,6 +31,9 @@ offset by `+320000`, so an aligned linker is the bond `(i, i + 320000)`.
 ```bash
 python WT_dS_polymer.py $SLURM_ARRAY_TASK_ID        # --array=1-5
 ```
+One example pre-equilibrated input, `input/trajectory_4000_0.gsd`
+(replica 0), is included in this repository. The full manuscript simulations
+used five independently pre-equilibrated inputs, numbered 0–4.
 
 The condition is set at the top of the script (`condition_name`); the array
 index selects the replica. Each run reads the last frame of the pre-equilibrated
@@ -56,6 +59,11 @@ independently on each chromatid.
 | Misalignment sigma | 50, 75, 100, 125, 150, 175 kb |
 | Linker separation | 200-400 kb in 25 kb steps |
 | Replicas | 5 |
+
+```markdown
+The lattice stage can generate all 270 parameter combinations. The polymer
+stage additionally requires `trajectory_4000_0.gsd` through
+`trajectory_4000_4.gsd`;
 
 ```bash
 python S8h_lattice.py $SLURM_ARRAY_TASK_ID        # --array=1-270, run lattice simulations first
