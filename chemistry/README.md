@@ -32,7 +32,7 @@ Step1_Centroid/CRN_centroid.ipynb
 ## Step1_Centroid/ — `CRN_centroid.ipynb`
 
 Solves two chemical reaction networks symbolically (sympy): the **linker /
-cohesive network** (PDS5, WAPL, Sororin binding + RAD21 unloading) and the
+cohesive network** (PDS5, WAPL, SORORIN binding + RAD21 unloading) and the
 **extrusive network** (NIPBL, PDS5, WAPL binding + RAD21 unloading). Both are
 solved for steady-state rate expressions, then evaluated over a grid of
 `(x, y)` = (fraction WAPL bound, fraction PDS5 bound at the linkers) to find
@@ -47,8 +47,8 @@ calculations.
 ## Step2_Kinetics/ — `bounded_linker_over_time_tau10h.ipynb`
 
 Takes the Step1 centroid, builds the linker/cohesive reaction network, and simulates the fraction of
-RAD21-bound cohesin over time (16-18h, spanning G2) for WT and several
-depletion conditions: dSororin, dWapl, dWapl+dSororin, dPDS5, and dRAD21.
+RAD21-bound cohesin over time (spanning G2) for WT and several
+depletion conditions: dSORORIN, dWAPL, dSORORIN+dWAPL, dPDS5, and dRAD21.
 
 - **Input:** `../Step1_Centroid/parameters_10h.json`.
 
@@ -62,11 +62,11 @@ were evaluated**:
 | Name | Perturbation | Rates evaluated at | Lattice resolution | Used by |
 |---|---|---|---|---|
 | `WT12h` | none | 12 h | 2500 bp/site | `WT_dS.py`, single phase |
-| `dS12h` | Sororin depleted | 12 h | 2500 bp/site | `WT_dS.py`, single phase |
+| `dS12h` | SORORIN depleted | 12 h | 2500 bp/site | `WT_dS.py`, single phase |
 | `WT7h` | none | 7 h | 500 bp/site | `dW_dSdW.py`, phase 1 |
-| `dS7h` | Sororin depleted | 7 h | 500 bp/site | `dW_dSdW.py`, phase 1 |
+| `dS7h` | SORORIN depleted | 7 h | 500 bp/site | `dW_dSdW.py`, phase 1 |
 | `dW` | WAPL depleted | post-depletion | 500 bp/site | `dW_dSdW.py`, phase 2 |
-| `dSdW` | Sororin + WAPL depleted | post-depletion | 500 bp/site | `dW_dSdW.py`, phase 2 |
+| `dSdW` | SORORIN + WAPL depleted | post-depletion | 500 bp/site | `dW_dSdW.py`, phase 2 |
 
 These labels are independent of the simulation windows inside each
 `{condition}_rates.py`, which are expressed relative to the start of that
