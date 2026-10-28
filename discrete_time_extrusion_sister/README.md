@@ -1,10 +1,14 @@
 # discrete_time_extrusion (sister-aware fork)
 
+<p align="center">
+  <img src="../docs/Lattice_Schematic.png"
+       alt="Cohesin biochemical kinetics workflow"
+       width="1000">
+</p>
+
 Sister-chromatid-aware loop-extrusion simulation.  1D lattice LEF model with "sister" anchor per pair of
 chromatids, so that cohesin loop extrusion and sister-chromatid cohesion
 can be simulated together.
-
-![Workflow overview](../docs/Lattice_Schematic.png)
 
 ## Repo layout
 
