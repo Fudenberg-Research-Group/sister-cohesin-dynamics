@@ -1,13 +1,14 @@
-# chemistry/ Cohesin biochemical kinetics
-
-Three-step pipeline that derives the kinetic parameters for the loop-extruding and sister-linking cohesins
-used by the lattice simulation in `../discrete_time_extrusion_sister/`.
+# Cohesin biochemical kinetics
 
 <p align="center">
   <img src="../docs/Biochemistry_Schematic.png"
        alt="Cohesin biochemical kinetics workflow"
-       width="800">
+       width="1000">
 </p>
+
+
+Three-step pipeline that derives the kinetic parameters for the loop-extruding and sister-linking cohesins
+used by the lattice simulation in `../discrete_time_extrusion_sister/`.
 
 ```
 chemistry/
