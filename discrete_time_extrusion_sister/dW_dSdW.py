@@ -7,7 +7,7 @@ same translocators.
 
 import time
 
-import numpy as np
+import argparse
 
 from discrete_time_extrusion.sister_lifecycle import (
     update,
@@ -17,25 +17,40 @@ from discrete_time_extrusion.sister_lifecycle import (
 import simulation_setup as setup
 
 CONDITIONS = {
-    "WT_dW": ("WT7h", "dW"),
-    "dS_dSdW": ("dS7h", "dSdW"),
+    "dW": ("WT7h", "dW"),
+    "dSdW": ("dS7h", "dSdW"),
 }
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Run a two-phase dWAPL or dSORORIN+dWAPL lattice simulation."
+    )
+    parser.add_argument(
+        "--condition",
+        choices=CONDITIONS,
+        required=True,
+    )
+    parser.add_argument(
+        "--replica",
+        type=int,
+        choices=range(5),
+        default=0,
+        help="Zero-based replica index (0-4).",
+    )
+    return parser.parse_args()
 
 def main():
-    condition_name = "WT_dW"
-    condition_phase1, condition_phase2 = CONDITIONS[condition_name]
+    args = parse_args()
+    condition_phase1, condition_phase2 = CONDITIONS[args.condition]
+    iteration = args.replica
 
-    # Local test: process_id set manually.
-    # For cluster job array, use: process_id = int(sys.argv[1]) - 1
-    process_id = 0
+    print(f"Running simulation for condition: {condition_phase1} -> {condition_phase2}, "
+        f"replica: {iteration}")
+
     tau = 11
     sister_dampings = 100
     collision_prob_index = 0
     bypass_index = 0
-
-    replica_ids = np.arange(5)
-    iteration = replica_ids[process_id]
 
     paramdict_phase1 = setup.load_paramdict(
         condition_phase1, tau, sister_dampings, collision_prob_index, bypass_index)

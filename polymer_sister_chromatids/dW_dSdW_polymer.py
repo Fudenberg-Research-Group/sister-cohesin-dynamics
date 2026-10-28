@@ -6,9 +6,8 @@ lattice output lives one level deeper (factor5/).
 """
 
 import os
-import sys
 
-import numpy as np
+import argparse
 
 import polymer_common as pc
 
@@ -20,19 +19,33 @@ CONDITIONS = {
 # Lattice sites per polymer monomer for these conditions (bp_per_site = 500).
 SCALE = 5
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Run a two-phase dWAPL or dSORORIN+dWAPL lattice simulation."
+    )
+    parser.add_argument(
+        "--condition",
+        choices=CONDITIONS,
+        required=True,
+    )
+    parser.add_argument(
+        "--replica",
+        type=int,
+        choices=range(5),
+        default=0,
+        help="Zero-based replica index (0-4).",
+    )
+    return parser.parse_args()
 
 def main():
-    condition_name = "dSdW"
-    condition = CONDITIONS[condition_name]
-    print(f"Running simulation for condition: {condition}")
+    args = parse_args()
+    condition = CONDITIONS[args.condition]
+    iteration = args.replica
 
-    process_id = int(sys.argv[1]) - 1
+    print(f"Running simulation for condition: {condition}, replica: {iteration}")
 
     alpha = 100
     tau = 11
-    replica_ids = np.arange(5)
-    iteration = replica_ids[process_id]
-    print(alpha, iteration)
 
     readpath = 'input'
 

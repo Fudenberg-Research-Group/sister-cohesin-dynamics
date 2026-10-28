@@ -7,7 +7,7 @@ then writes synchronized extrusion trajectories for both chromatids.
 
 import time
 
-import numpy as np
+import argparse
 
 from discrete_time_extrusion.sister_lifecycle import (
     run_synchronized_trajectories_continue,
@@ -20,24 +20,36 @@ CONDITIONS = {
     "dS": "dS12h",
 }
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Run a WT or dSORORIN lattice simulation."
+    )
+    parser.add_argument(
+        "--condition",
+        choices=CONDITIONS,
+        required=True,
+        help="Biological condition to simulate.",
+    )
+    parser.add_argument(
+        "--replica",
+        type=int,
+        choices=range(5),
+        default=0,
+        help="Zero-based replica index (0-4).",
+    )
+    return parser.parse_args()
 
 def main():
-    condition_name = "dS"
-    condition_phase = CONDITIONS[condition_name]
+    args = parse_args()
+    condition_phase = CONDITIONS[args.condition]
+    iteration = args.replica
 
-    # Local test: process_id set manually.
-    # For cluster job array, use: process_id = int(sys.argv[1]) - 1
-    process_id = 0
     tau = 11
     sister_dampings = 100
     collision_prob_index = 0
     bypass_index = 0
 
-    # Five replicas were run for the manuscript; only iteration 0's anchor
-    # files are included in this repository (see README, "Input data").
-    replica_ids = np.arange(5)
-    iteration = replica_ids[process_id]
-
+    print(f"Running simulation for condition: {condition_phase}, replica: {iteration}")
     paramdict_phase = setup.load_paramdict(
         condition_phase, tau, sister_dampings, collision_prob_index, bypass_index)
 
