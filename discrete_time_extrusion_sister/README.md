@@ -59,8 +59,10 @@ These come from a separate sweeping of misalignment and linker
 density parameters and identifying the fit to experimental scsHi-C at G2-0h—
 not generated inside this repo.
 
-**One example replica (`iteration = 0`) is included here.** The scripts default
-to `process_id = 0` and therefore run out of the box against it.
+**One example replica (`replica = 0`) is included here.** Both entry scripts
+use zero-based replica indices selected with `--replica`; therefore the
+included anchor files support `--replica 0`. Replicas 1–4 require the
+corresponding additional anchor files.
 
 If `num_of_sisters` in the condition's
 JSON is smaller than the number of positions in the anchor file (the dS/
@@ -91,46 +93,54 @@ discard that history. `prune_unbound_LEFs` is correspondingly `True` in phase 1
 
 ## Running a simulation
 
-Both scripts run one replica at a time, selected via `process_id`
-(hardcoded to `0` for local testing; set from `sys.argv[1]` for a cluster
-job array — see the commented-out line near the top of each script).
+Both entry scripts select the biological condition with `--condition` and the
+zero-based replica index with `--replica`. The condition is required; the
+replica defaults to 0.
 
-**Single-phase (`WT_dS.py`)** — runs one condition once, no parameter
-switch mid-run:
-
-```python
-CONDITIONS = {
-    "WT": "WT12h",
-    "dS": "dS12h",
-}
-condition_name = "WT"   # or "dS"
-```
-
-**Two-phase (`dW_dSdW.py`)** — runs a "phase 1" condition, then switches
-parameters (`update()`) and continues as "phase 2":
-
-```python
-CONDITIONS = {
-    "WT_dW": ("WT7h", "dW"),
-    "dS_dSdW": ("dS7h", "dSdW"),
-}
-condition_name = "WT_dW"   # or "dS_dSdW"
-```
-
-Both scripts also expose `tau`, `sister_dampings` (alpha),
-`collision_prob_index` (beta), and `bypass_index` (gamma) — these select
-which JSON file gets loaded and are encoded into the output folder name.
+**Single-phase WT or dSORORIN:**
 
 ```bash
-python WT_dS.py
-python dW_dSdW.py
+python WT_dS.py --condition WT --replica 0
+python WT_dS.py --condition dS --replica 0
 ```
 
-The run lengths are specified explicitly in the two entry scripts.
-`WT_dS.py` runs a single 16 h phase for 46,080 lattice steps.
-`dW_dSdW.py` runs 86,400 steps for the 6 h pre-depletion phase, followed by
-144,000 steps for the 10 h post-depletion phase. The different step counts
-reflect the condition-specific lattice time resolution.
+**Two-phase dWAPL or dSORORIN+dWAPL:**
+
+```bash
+python dW_dSdW.py --condition dW --replica 0
+python dW_dSdW.py --condition dSdW --replica 0
+```
+
+For a cluster job array, pass the task id straight through — note that the
+indices are zero-based:
+
+```bash
+#SBATCH --array=0-4
+python WT_dS.py --condition WT --replica $SLURM_ARRAY_TASK_ID
+```
+
+Only replica 0's anchor files ship with this repository; see
+[Input data](#input-data) above.
+
+
+Each script also sets `tau`, `sister_dampings` (alpha),
+`collision_prob_index` (beta) and `bypass_index` (gamma) as constants at the
+top of `main()`. These select which parameter JSON is loaded and are encoded
+into the output folder name — see
+[Lattice resolution and the `factor5` output path](#lattice-resolution-and-the-factor5-output-path).
+
+Both designs cover the same 16 h of G2, at different lattice time resolutions:
+
+| Script | Phases | Steps | Seconds per step | Total |
+|---|---|---|---|---|
+| `WT_dS.py` | 1 | 46,080 | 1.25 | 16 h |
+| `dW_dSdW.py` | 2 | 86,400 + 144,000 | 0.25 | 6 h + 10 h = 16 h |
+
+The step counts differ because `bp_per_site` differs between the condition
+families (2500 vs 500), so one lattice step is 1.25 s in the 12h conditions and
+0.25 s in the 7h ones.
+````
+
 
 ## Output
 
