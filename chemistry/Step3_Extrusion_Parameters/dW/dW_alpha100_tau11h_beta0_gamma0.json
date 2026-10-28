@@ -60,7 +60,7 @@
     "sister_lifetime": 9192148,
     "sister_damping_factor": 100,
     "number_of_replica": 1,
-    "steps": 28800,
+    "steps": 36000,
     "dummy_steps": 0,
     "active_extrusion_rate": 1000,
     "collision_release_prob": 1e-07,

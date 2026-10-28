@@ -2,7 +2,7 @@
 
 import json
 import numpy as np
-import sympy as sym 
+import sympy as sym
 import tellurium as te
 import pandas as pd
 from pathlib import Path
@@ -44,9 +44,9 @@ pairs = list(product(RESIDENCE_TIMES_HOURS, SISTER_DAMPING_FACTORS))
 
 # Physical constants
 NUM_SISTERCS = 7764
-NUM_EXTRUDERS = 7764 
+NUM_EXTRUDERS = 7764
 GENOMIC_REGION_SIZE_BP = 800_000_000
-BP_PER_SITE = 500 
+BP_PER_SITE = 500
 NUM_LATTICE_SITES = GENOMIC_REGION_SIZE_BP // BP_PER_SITE
 
 
@@ -65,7 +65,7 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     for rate_symbol, rate_expr in sol_rates_coh.items():
         rate = rate_expr.evalf(subs=paras_dict_coh_local)
         paras_dict_coh_local[rate_symbol] = rate
-    
+
     # Calculate extrusive parameters
     paras_values_ext = calculate_extrusive_parameters(config)
     paras_dict_ext_local = dict(zip(paras_ext, paras_values_ext))
@@ -78,13 +78,13 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     # Define symbolic initial conditions
     Rac_free_init, Rac_init,  RacP_init, RacPW_init, RacPS_init, R_free_init, RN_init, R_init, RP_init, RPW_init, N_init, S_init, W_init, P_init = sym.symbols(
         "Rac_free_init, Rac_init, RacP_init, RacPW_init, RacPS_init, R_free_init, RN_init, R_init, RP_init, RPW_init, N_init, S_init, W_init, P_init")
-    
-    depletion_level_sororin = config['simulation_parameters']['depletion_level_sororin'] 
-    remaining_level_sororin = 1 - depletion_level_sororin 
 
-    # whether to use the new number of sisterCs: 
+    depletion_level_sororin = config['simulation_parameters']['depletion_level_sororin']
+    remaining_level_sororin = 1 - depletion_level_sororin
+
+    # whether to use the new number of sisterCs:
     init_conditions_ext_coh_dS = {
-       Rac_free_init: 0, 
+       Rac_free_init: 0,
        Rac_init: initial_num_sister_cohesins,
        RacP_init: 0,
        RacPW_init: 0,
@@ -93,9 +93,9 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
        R_free_init: paras_dict_coh_local[N_R],
        RN_init: 0,
        R_init: 0,
-       RP_init: 0, 
-       RPW_init: 0, 
-    
+       RP_init: 0,
+       RPW_init: 0,
+
        N_init: config['base_parameters']['N_N'],
        S_init: paras_dict_coh_local[N_S] * remaining_level_sororin,
        W_init: config['base_parameters']['N_W'],
@@ -105,16 +105,16 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     # Update combined dictionary
     paras_dict_local = paras_dict_coh_local | paras_dict_ext_local | init_conditions_ext_coh_dS
     paras_dict_ext_coh_local = {str(key): value for key, value in paras_dict_local.items()}
-    
+
     # Simulate model dW for 8h(S8h) + 6h = 14h
     Model_ext_coh = build_model(MODEL_EXT_COH_TEMPLATE, paras_dict_ext_coh_local)
     r_ext_coh = te.loada(Model_ext_coh)
     Model_ext_coh_dS = r_ext_coh.simulate(0, 3600*14, 3600*14)
 
-    columns = ['time', 'Rac', 'P', 'RacP', 'S', 'RacPS', 'W', 'RacPW', 
+    columns = ['time', 'Rac', 'P', 'RacP', 'S', 'RacPS', 'W', 'RacPW',
                'Rac_free', 'R_free', 'N', 'RN', 'R', 'RP', 'RPW']
     df_dS = pd.DataFrame(Model_ext_coh_dS, columns=columns)
-   
+
     ds7_analysis_index = 3600 * 7 - 1
     total_sister_rad21_S7h = (df_dS['RacPS'][ds7_analysis_index] + df_dS['RacPW'][ds7_analysis_index] +
                               df_dS['RacP'][ds7_analysis_index] + df_dS['Rac'][ds7_analysis_index])
@@ -123,15 +123,15 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
         K_RacPW_Rac_free = paras_dict_ext_coh_local['K_RacPW_Rac_free'], \
         B_W_sister = df_dS['RacPW'][ds7_analysis_index], \
         B_R_sister = total_sister_rad21_S7h)
-    
-    ## Apply Wapl depletion at 14h  = 6h(Spahse) + 8h = 14h 
+
+    ## Apply Wapl depletion at 14h  = 6h(Spahse) + 8h = 14h
     time_14h = 3600 * 14 - 1
     depletion_level_wapl = config['simulation_parameters']['depletion_level_wapl']
-    remaining_level_wapl = 1 - depletion_level_wapl 
-  
+    remaining_level_wapl = 1 - depletion_level_wapl
+
     init_conditions_ext_coh_dWapl_14h = {
-        Rac_free_init: df_dS['Rac_free'][time_14h], 
-        Rac_init: df_dS['Rac'][time_14h], 
+        Rac_free_init: df_dS['Rac_free'][time_14h],
+        Rac_init: df_dS['Rac'][time_14h],
         RacP_init: df_dS['RacP'][time_14h] + df_dS['RacPW'][time_14h] * depletion_level_wapl,
         RacPW_init: df_dS['RacPW'][time_14h] * remaining_level_wapl,
         RacPS_init: df_dS['RacPS'][time_14h],
@@ -139,9 +139,9 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
         R_free_init: df_dS['R_free'][time_14h],
         RN_init: df_dS['RN'][time_14h] ,
         R_init: df_dS['R'][time_14h]  ,
-        RP_init: df_dS['RP'][time_14h] + df_dS['RPW'][time_14h] * depletion_level_wapl, 
-        RPW_init: df_dS['RPW'][time_14h] * remaining_level_wapl, 
-    
+        RP_init: df_dS['RP'][time_14h] + df_dS['RPW'][time_14h] * depletion_level_wapl,
+        RPW_init: df_dS['RPW'][time_14h] * remaining_level_wapl,
+
         N_init: df_dS['N'][time_14h],
         S_init: df_dS['S'][time_14h],
         W_init: df_dS['W'][time_14h] * remaining_level_wapl,
@@ -150,25 +150,25 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
 
     paras_dict_since_14h_dW = paras_dict_coh_local | paras_dict_ext_local | init_conditions_ext_coh_dWapl_14h
     paras_dict_ext_coh_since_14h_dW = {str(key): value for key, value in paras_dict_since_14h_dW.items()}
-    
+
     Model_ext_coh_since_14h_dW = build_model(MODEL_EXT_COH_TEMPLATE, paras_dict_ext_coh_since_14h_dW)
     # print(model_ext_coh)
     # Load the modes
     r_ext_coh_since_14h_dW = te.loada(Model_ext_coh_since_14h_dW)
     # Simulate the model for 10h
     Model_ext_coh_since_14h_dW = r_ext_coh_since_14h_dW.simulate(0, 3600*10, 3600*10)
-    
+
     df_since_14h = pd.DataFrame(Model_ext_coh_since_14h_dW, columns=columns)
 
     '''
     start_time_0 = 0
     start_time_S14h = 3600 * 14 - 1
     end_time_S24h = 3600 * 10 - 1
-    bound_sisterC_0 = (df_dS['Rac'][start_time_0] +  df_dS['RacPS'][start_time_0] + 
+    bound_sisterC_0 = (df_dS['Rac'][start_time_0] +  df_dS['RacPS'][start_time_0] +
                        df_dS['RacP'][start_time_0] + df_dS['RacPW'][start_time_0])
-    bound_sisterC_S14h = (df_dS['Rac'][start_time_S14h] +  df_dS['RacPS'][start_time_S14h] + 
+    bound_sisterC_S14h = (df_dS['Rac'][start_time_S14h] +  df_dS['RacPS'][start_time_S14h] +
                        df_dS['RacP'][start_time_S14h] + df_dS['RacPW'][start_time_S14h])
-    bound_sisterC_S24h = (df_since_14h['Rac'][end_time_S24h] +  df_since_14h['RacPS'][end_time_S24h] + 
+    bound_sisterC_S24h = (df_since_14h['Rac'][end_time_S24h] +  df_since_14h['RacPS'][end_time_S24h] +
                        df_since_14h['RacP'][end_time_S24h] + df_since_14h['RacPW'][end_time_S24h])
     # num_used_in_bypass = bound_sisterC_S24h/bound_sisterC_S14h*1352
     # num_used_in_bypass1 = bound_sisterC_S24h/bound_sisterC_0*initial_num_sister_cohesins
@@ -180,7 +180,7 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     # Calculate metrics
     total_bound_ext = (df_since_14h['R'][analysis_index] + df_since_14h['RN'][analysis_index] +
                        df_since_14h['RP'][analysis_index] + df_since_14h['RPW'][analysis_index])
-    
+
     bound_extC_ratio = total_bound_ext / (paras_dict_coh_local[N_R]*0.5)
     # extC_bound_frac = total_bound_ext / (total_bound_ext + df_since_14h['R_free'][analysis_index])
     # extC_value = int(NUM_EXTRUDERS * bound_extC_ratio)
@@ -195,7 +195,7 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
         K_RacPW_Rac_free = paras_dict_ext_coh_since_14h_dW['K_RacPW_Rac_free'], \
         B_W_sister = df_since_14h['RacPW'][analysis_index], \
         B_R_sister = total_sister_rad21)
-    
+
     sister_rad21_lifetime_after_wapl_depletion_hours = float(
         sister_rad21_lifetime_after_wapl_depletion / 3600
     )
@@ -216,8 +216,8 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     sister_rad21_lifetime_before_wapl_depletion_hours = float(
         sister_rad21_lifetime_before_wapl_depletion / 3600
     )
-    
-    ### number used in bypass at S24h is 578 
+
+    ### number used in bypass at S24h is 578
     N_sister_S8h = gamma_constant * sister_rad21_lifetime_before_wapl_depletion_hours * (
         1 - np.exp(-8 / sister_rad21_lifetime_before_wapl_depletion_hours)
     )
@@ -230,7 +230,7 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     # Load base parameters and update
     with open(SCRIPT_DIR / config["output_template_file"], "r") as f:
         output_params = json.load(f)
-    
+
     output_params["LEF_on_rate"]["A"] = float(rates['R_free_to_RN'])
     output_params["LEF_off_rate"]["A"] = float(rates['RPW_R_free'])
     output_params["LEF_diffusion_rate"]["A"] = float(0.25)
@@ -242,12 +242,12 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     output_params["LEF_transition_rates"]["32"]["A"] = float(rates['RP_R'])
     output_params["LEF_transition_rates"]["34"]["A"] = float(rates['RP_RPW'])
     output_params["LEF_transition_rates"]["43"]["A"] = float(rates['RPW_RP'])
-    
+
     output_params["Total_LEF_per_bp"] = total_lef_per_bp
     # output_params["velocity_multiplier"] = float(velocity_8h)
     output_params["bp_per_site"] = BP_PER_SITE
     output_params["region_size_bp"] = NUM_LATTICE_SITES * BP_PER_SITE
-    output_params["steps"] = int(10*3600/1.25)
+    output_params["steps"] = 10 * 3600
 
     # output_params["num_of_sisters"] = config['simulation_parameters']['num_of_sisters']
     output_params["num_of_sisters"] = int(initial_num_sister_cohesins)
@@ -255,20 +255,20 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     output_params["sister_lifetime"] = int(sister_rad21_lifetime_after_wapl_depletion)
 
     output_params["collision_release_prob"] = collision_prob
-    output_params["bypass_prob"] = bypass_prob 
-    
-    return output_params 
+    output_params["bypass_prob"] = bypass_prob
+
+    return output_params
 
 
 def main():
     """Main execution function"""
     # Load configuration
     config = load_config('network_parameters_dSdW.json')
-    
+
     # Create output directory
     output_dir = SCRIPT_DIR / config['output_directory']
     output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     for residence_time in RESIDENCE_TIMES_HOURS:
         for sister_damping in SISTER_DAMPING_FACTORS:
             for k, collision_prob in enumerate(COLLISION_RELEASE_PROBS):
@@ -281,11 +281,11 @@ def main():
                     filename = (f"{config['output_prefix']}_"
                         f"alpha{sister_damping}_tau{residence_time}h_beta{k}_gamma{q}.json")
                     filepath = output_dir / filename
-            
-            
+
+
                     with open(filepath, "w") as f:
                         json.dump(params, f, indent=4)
-            
+
                     print(f"Saved: {filepath}")
 
     print("\nAll simulations complete!")

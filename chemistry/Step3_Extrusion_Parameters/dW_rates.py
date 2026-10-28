@@ -2,7 +2,7 @@
 
 import json
 import numpy as np
-import sympy as sym 
+import sympy as sym
 import tellurium as te
 import pandas as pd
 from pathlib import Path
@@ -45,9 +45,9 @@ BYPASS_PROBS = [1e-5]
 
 # Physical constants
 NUM_SISTERCS = 7764
-NUM_EXTRUDERS = 7764 
+NUM_EXTRUDERS = 7764
 GENOMIC_REGION_SIZE_BP = 800_000_000
-BP_PER_SITE = 500 
+BP_PER_SITE = 500
 NUM_LATTICE_SITES = GENOMIC_REGION_SIZE_BP // BP_PER_SITE
 
 def run_simulation(config, residence_time, sister_damping, collision_prob, bypass_prob):
@@ -63,7 +63,7 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     for rate_symbol, rate_expr in sol_rates_coh.items():
         rate = rate_expr.evalf(subs=paras_dict_coh_local)
         paras_dict_coh_local[rate_symbol] = rate
-    
+
     # Calculate extrusive parameters
     paras_values_ext = calculate_extrusive_parameters(config)
     paras_dict_ext_local = dict(zip(paras_ext, paras_values_ext))
@@ -76,10 +76,10 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     # Define symbolic initial conditions
     Rac_free_init, Rac_init, RacP_init, RacPW_init, RacPS_init, R_free_init, RN_init, R_init, RP_init, RPW_init, N_init, S_init, W_init, P_init = sym.symbols(
         "Rac_free_init, Rac_init, RacP_init, RacPW_init, RacPS_init, R_free_init, RN_init, R_init, RP_init, RPW_init, N_init, S_init, W_init, P_init")
-    
+
     init_conditions_ext_coh = {
-       Rac_free_init: 0, 
-       Rac_init: paras_dict_coh_local[N_R]*1/2, 
+       Rac_free_init: 0,
+       Rac_init: paras_dict_coh_local[N_R]*1/2,
        RacP_init: 0,
        RacPW_init: 0,
        RacPS_init: 0,
@@ -87,9 +87,9 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
        R_free_init: paras_dict_coh_local[N_R],
        RN_init: 0,
        R_init: 0,
-       RP_init: 0, 
-       RPW_init: 0, 
-    
+       RP_init: 0,
+       RPW_init: 0,
+
        N_init: config['base_parameters']['N_N'],
        S_init: paras_dict_coh_local[N_S],
        W_init: config['base_parameters']['N_W'],
@@ -97,42 +97,42 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     }
 
     # Update combined dictionary
-    paras_dict_local = paras_dict_coh_local | paras_dict_ext_local | init_conditions_ext_coh 
+    paras_dict_local = paras_dict_coh_local | paras_dict_ext_local | init_conditions_ext_coh
     paras_dict_ext_coh_local = {str(key): value for key, value in paras_dict_local.items()}
-    
+
     # Rebuild and simulate model
     Model_ext_coh = build_model(MODEL_EXT_COH_TEMPLATE, paras_dict_ext_coh_local)
     r_ext_coh = te.loada(Model_ext_coh)
     Model_ext_coh_WT = r_ext_coh.simulate(0, 3600*18, 3600*18)
 
-    columns = ['time', 'Rac', 'P', 'RacP', 'S', 'RacPS', 'W', 'RacPW', 
+    columns = ['time', 'Rac', 'P', 'RacP', 'S', 'RacPS', 'W', 'RacPW',
                'Rac_free', 'R_free', 'N', 'RN', 'R', 'RP', 'RPW']
     df_WT = pd.DataFrame(Model_ext_coh_WT, columns=columns)
-    
+
     ## Apply Wapl depletion at 6h since S8h (14h since start of S phase)
     time_6h = 3600 * 6 - 1
     depletion_level = config['simulation_parameters']['depletion_level']
-    remaining_level = 1 - depletion_level 
-    
+    remaining_level = 1 - depletion_level
+
     init_conditions_ext_coh_dWapl_6h = {
-        Rac_free_init: df_WT['Rac_free'][time_6h], 
-        Rac_init: df_WT['Rac'][time_6h], 
+        Rac_free_init: df_WT['Rac_free'][time_6h],
+        Rac_init: df_WT['Rac'][time_6h],
         RacP_init: df_WT['RacP'][time_6h] + df_WT['RacPW'][time_6h] * depletion_level,
         RacPW_init: df_WT['RacPW'][time_6h] * remaining_level,
         RacPS_init: df_WT['RacPS'][time_6h],
         R_free_init: df_WT['R_free'][time_6h],
         RN_init: df_WT['RN'][time_6h] ,
         R_init: df_WT['R'][time_6h]  ,
-        RP_init: df_WT['RP'][time_6h] + df_WT['RPW'][time_6h] * depletion_level, 
-        RPW_init: df_WT['RPW'][time_6h] * remaining_level, 
-    
+        RP_init: df_WT['RP'][time_6h] + df_WT['RPW'][time_6h] * depletion_level,
+        RPW_init: df_WT['RPW'][time_6h] * remaining_level,
+
         N_init: df_WT['N'][time_6h],
         S_init: df_WT['S'][time_6h],
         W_init: df_WT['W'][time_6h] * remaining_level,
         P_init: df_WT['P'][time_6h],
        }
 
-    paras_dict_since_6h_dW = paras_dict_coh_local | paras_dict_ext_local | init_conditions_ext_coh_dWapl_6h 
+    paras_dict_since_6h_dW = paras_dict_coh_local | paras_dict_ext_local | init_conditions_ext_coh_dWapl_6h
     paras_dict_ext_coh_since_6h_dW = {str(key): value for key, value in paras_dict_since_6h_dW.items()}
     Model_ext_coh_since_6h_dW = build_model(MODEL_EXT_COH_TEMPLATE, paras_dict_ext_coh_since_6h_dW)
     # print(model_ext_coh)
@@ -140,17 +140,17 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     r_ext_coh_since_6h_dW = te.loada(Model_ext_coh_since_6h_dW)
     # Simulate the model for another 10h
     Model_ext_coh_since_6h_dW = r_ext_coh_since_6h_dW.simulate(0, 3600*10, 3600*10)
-    
+
     df_since_6h = pd.DataFrame(Model_ext_coh_since_6h_dW, columns=columns)
 
     '''
     start_time = 0
     end_time = 3600 * 10 - 1
-    bound_sisterC_start = (df_WT['Rac'][start_time] +  df_WT['RacPS'][start_time] + 
+    bound_sisterC_start = (df_WT['Rac'][start_time] +  df_WT['RacPS'][start_time] +
                        df_WT['RacP'][start_time] + df_WT['RacPW'][start_time])
-    bound_sisterC_end = (df_since_6h['Rac'][end_time] +  df_since_6h['RacPS'][end_time] + 
+    bound_sisterC_end = (df_since_6h['Rac'][end_time] +  df_since_6h['RacPS'][end_time] +
                        df_since_6h['RacP'][end_time] + df_since_6h['RacPW'][end_time])
-    
+
     # num_used_in_bypass = bound_sisterC_end/bound_sisterC_start*2909
     '''
 
@@ -160,7 +160,7 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     # Calculate metrics
     total_bound_ext = (df_since_6h['R'][analysis_index] + df_since_6h['RN'][analysis_index] +
                        df_since_6h['RP'][analysis_index] + df_since_6h['RPW'][analysis_index])
-    
+
     bound_extC_ratio = total_bound_ext / (paras_dict_coh_local[N_R]*0.5)
     # extC_bound_frac = total_bound_ext / (total_bound_ext + df_since_6h['R_free'][analysis_index])
     # extC_value = int(NUM_SISTERCS * bound_extC_ratio)
@@ -200,7 +200,7 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     # Load base parameters and update
     with open(SCRIPT_DIR / config["output_template_file"], "r") as f:
         output_params = json.load(f)
-    
+
     output_params["LEF_on_rate"]["A"] = float(rates['R_free_to_RN'])
     output_params["LEF_off_rate"]["A"] = float(rates['RPW_R_free'])
     output_params["LEF_diffusion_rate"]["A"] = float(0.25)
@@ -212,33 +212,33 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     output_params["LEF_transition_rates"]["32"]["A"] = float(rates['RP_R'])
     output_params["LEF_transition_rates"]["34"]["A"] = float(rates['RP_RPW'])
     output_params["LEF_transition_rates"]["43"]["A"] = float(rates['RPW_RP'])
-    
+
 
     output_params["Total_LEF_per_bp"] = total_lef_per_bp
     # output_params["velocity_multiplier"] = float(velocity_8h)
     output_params["bp_per_site"] = BP_PER_SITE
     output_params["region_size_bp"] = GENOMIC_REGION_SIZE_BP
-    output_params["steps"] = int(10*3600/1.25)
-    
+    output_params["steps"] = 10 * 3600
+
     # output_params["num_of_sisters"] = config['simulation_parameters']['num_of_sisters']
     output_params["sister_damping_factor"] = sister_damping
     output_params["sister_lifetime"] = int(sister_rad21_lifetime_at_analysis)
-    
+
     output_params["collision_release_prob"] = collision_prob
-    output_params["bypass_prob"] = bypass_prob 
-    
-    return output_params 
+    output_params["bypass_prob"] = bypass_prob
+
+    return output_params
 
 
 def main():
     """Main execution function"""
     # Load configuration
     config = load_config('network_parameters_dW.json')
-    
+
     # Create output directory
     output_dir = SCRIPT_DIR / config['output_directory']
     output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Run parameter sweep
     # for residence_time in RESIDENCE_TIMES_HOURS:
     #     for sister_damping in SISTER_DAMPING_FACTORS:
@@ -254,8 +254,8 @@ def main():
                     filename = (f"{config['output_prefix']}_"
                         f"alpha{sister_damping}_tau{residence_time}h_beta{k}_gamma{q}.json")
                     filepath = output_dir / filename
-            
-            
+
+
                     with open(filepath, "w") as f:
                         json.dump(params, f, indent=4)
                     print(f"Saved: {filepath}")

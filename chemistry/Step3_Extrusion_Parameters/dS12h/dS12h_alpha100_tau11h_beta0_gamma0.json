@@ -12,7 +12,7 @@
         "A": 0.01
     },
     "LEF_on_rate": {
-        "A": 0.0017837165774828908
+        "A": 0.0017836155597182723
     },
     "LEF_off_rate": {
         "A": 0.00989277162275847
@@ -34,10 +34,10 @@
     },
     "LEF_transition_rates": {
         "21": {
-            "A": 0.0181047438756408
+            "A": 0.01810371854416247
         },
         "23": {
-            "A": 0.016937767451412494
+            "A": 0.016933515333344137
         },
         "12": {
             "A": 0.0125
@@ -46,7 +46,7 @@
             "A": 0.02615677491108585
         },
         "34": {
-            "A": 0.07662982289878636
+            "A": 0.07659952324295558
         },
         "43": {
             "A": 0.012329450599463753
@@ -56,11 +56,11 @@
     "mode": "symmetric",
     "region_size_bp": 800000000,
     "bp_per_site": 2500,
-    "num_of_sisters": 1913,
-    "sister_lifetime": 16204,
+    "num_of_sisters": 1914,
+    "sister_lifetime": 16209,
     "sister_damping_factor": 100,
     "number_of_replica": 1,
-    "steps": 64800,
+    "steps": 57600,
     "dummy_steps": 0,
     "active_extrusion_rate": 1000,
     "collision_release_prob": 1e-06,

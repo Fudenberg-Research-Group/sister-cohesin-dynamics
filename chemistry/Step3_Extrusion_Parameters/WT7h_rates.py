@@ -1,7 +1,7 @@
 
 import json
 import numpy as np
-import sympy as sym 
+import sympy as sym
 import tellurium as te
 import pandas as pd
 from pathlib import Path
@@ -43,9 +43,9 @@ pairs = list(product(RESIDENCE_TIMES_HOURS, SISTER_DAMPING_FACTORS))
 
 # Physical constants
 NUM_SISTERCS = 7764
-NUM_EXTRUDERS = 7764 
+NUM_EXTRUDERS = 7764
 GENOMIC_REGION_SIZE_BP = 800_000_000
-BP_PER_SITE = 500 
+BP_PER_SITE = 500
 NUM_LATTICE_SITES = GENOMIC_REGION_SIZE_BP // BP_PER_SITE
 
 
@@ -64,7 +64,7 @@ def run_simulation(config, residence_time, sister_damping, collision_release_pro
     for rate_symbol, rate_expr in sol_rates_coh.items():
         rate = rate_expr.evalf(subs=paras_dict_coh_local)
         paras_dict_coh_local[rate_symbol] = rate
-    
+
     # Calculate extrusive parameters
     paras_values_ext = calculate_extrusive_parameters(config)
     paras_dict_ext_local = dict(zip(paras_ext, paras_values_ext))
@@ -77,10 +77,10 @@ def run_simulation(config, residence_time, sister_damping, collision_release_pro
     # Define symbolic initial conditions
     Rac_free_init, Rac_init, RacP_init, RacPW_init, RacPS_init, R_free_init, RN_init, R_init, RP_init, RPW_init, N_init, S_init, W_init, P_init = sym.symbols(
         "Rac_free_init, Rac_init, RacP_init, RacPW_init, RacPS_init, R_free_init, RN_init, R_init, RP_init, RPW_init, N_init, S_init, W_init, P_init")
-    
+
     init_conditions_ext_coh = {
-       Rac_free_init: 0, 
-       Rac_init: paras_dict_coh_local[N_R]*1/2, 
+       Rac_free_init: 0,
+       Rac_init: paras_dict_coh_local[N_R]*1/2,
        RacP_init: 0,
        RacPW_init: 0,
        RacPS_init: 0,
@@ -88,42 +88,42 @@ def run_simulation(config, residence_time, sister_damping, collision_release_pro
        R_free_init: paras_dict_coh_local[N_R],
        RN_init: 0,
        R_init: 0,
-       RP_init: 0, 
-       RPW_init: 0, 
-    
+       RP_init: 0,
+       RPW_init: 0,
+
        N_init: config['base_parameters']['N_N'],
        S_init: paras_dict_coh_local[N_S],
        W_init: config['base_parameters']['N_W'],
        P_init: config['base_parameters']['N_P'],
     }
     # Update combined dictionary
-    paras_dict_local = paras_dict_coh_local | paras_dict_ext_local | init_conditions_ext_coh 
+    paras_dict_local = paras_dict_coh_local | paras_dict_ext_local | init_conditions_ext_coh
     paras_dict_ext_coh_local = {str(key): value for key, value in paras_dict_local.items()}
-    
-    # Simulate model for 6h since S8h 
+
+    # Simulate model for 6h since S8h
     Model_ext_coh = build_model(MODEL_EXT_COH_TEMPLATE, paras_dict_ext_coh_local)
     r_ext_coh = te.loada(Model_ext_coh)
     Model_ext_coh_WT = r_ext_coh.simulate(0, 3600*6, 3600*6)
-    
-    columns = ['time', 'Rac',  'P', 'RacP', 'S', 'RacPS', 'W', 'RacPW', 
+
+    columns = ['time', 'Rac',  'P', 'RacP', 'S', 'RacPS', 'W', 'RacPW',
            'Rac_free', 'R_free', 'N', 'RN', 'R', 'RP', 'RPW']
-    
+
     df_WT = pd.DataFrame(Model_ext_coh_WT, columns=columns)
-    
+
     # Calculate LEF_sep and velocity at 3h
-    analysis_hours = config['simulation_parameters']['analysis_timepoint_hours'] 
+    analysis_hours = config['simulation_parameters']['analysis_timepoint_hours']
     index = 3600 * analysis_hours - 1
-    total_bound_ext = (df_WT['R'][index] + df_WT['RN'][index] + 
+    total_bound_ext = (df_WT['R'][index] + df_WT['RN'][index] +
                        df_WT['RP'][index] + df_WT['RPW'][index])
     bound_extC_ratio = total_bound_ext / (paras_dict_coh_local[N_R]*0.5)
     extC_bound_frac =  total_bound_ext / (total_bound_ext + df_WT['R_free'][index])
-    # 
+    #
     extC_value = int(NUM_EXTRUDERS * bound_extC_ratio)
     # velocity_9h = 1/5 * total_bound_ext / df_WT['RN'][index]
     # LEF_sep_4h = int(LATTICE_SIZE * extC_bound_frac / (extC_value / 2))
 
     total_lef_per_bp = int(NUM_EXTRUDERS) / GENOMIC_REGION_SIZE_BP
-    
+
     # Calculate transition rates
     rates = {
         'R_free_to_RN': paras_dict_ext_coh_local['Kext_R_free_RN'] * df_WT['N'][index],
@@ -139,11 +139,11 @@ def run_simulation(config, residence_time, sister_damping, collision_release_pro
     # Load base parameters and update
     with open(f"extrusion_dict_RN_RB_RP_RW_HBD_WT.json", "r") as f:
         output_params = json.load(f)
-    
+
     output_params["LEF_on_rate"]["A"] = float(rates['R_free_to_RN'])
     output_params["LEF_off_rate"]["A"] = float(rates['RPW_R_free'])
     output_params["LEF_diffusion_rate"]["A"] = float(0.25)
-    
+
     output_params["LEF_stalled_off_rate"]["A"] = float(rates['RPW_R_free'])
     output_params["LEF_transition_rates"]["21"]["A"] = float(rates['R_RN'])
     output_params["LEF_transition_rates"]["23"]["A"] = float(rates['R_RP'])
@@ -156,14 +156,14 @@ def run_simulation(config, residence_time, sister_damping, collision_release_pro
     # output_params["velocity_multiplier"] = float(velocity_9h)
     output_params["bp_per_site"] = BP_PER_SITE
     output_params["region_size_bp"] = NUM_LATTICE_SITES * BP_PER_SITE
-    output_params["steps"] = int(6*3600/1.25)
+    output_params["steps"] = 6 * 3600
     # output_params["num_of_sisters"] = config['simulation_parameters']['num_of_sisters']
     output_params["num_of_sisters"] = 2909
     output_params["sister_damping_factor"] = sister_damping
     output_params["sister_lifetime"] = residence_time * 3600
     output_params["collision_release_prob"] = collision_release_prob
     output_params["bypass_prob"] = bypass_prob
-    
+
     return output_params
 
 
@@ -171,11 +171,11 @@ def main():
     """Main execution function"""
     # Load configuration
     config = load_config('network_parameters_WT7h.json')
-    
+
     # Create output directory
     output_dir = Path(config['output_directory'])
     output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Run parameter sweep
     for residence_time in RESIDENCE_TIMES_HOURS:
         for sister_damping in SISTER_DAMPING_FACTORS:
@@ -189,10 +189,10 @@ def main():
                     filename = (f"{config['output_prefix']}_"
                         f"alpha{sister_damping}_tau{residence_time}h_beta{k}_gamma{q}.json")
                     filepath = output_dir / filename
-            
+
                     with open(filepath, "w") as f:
                         json.dump(params, f, indent=4)
-            
+
                     print(f"Saved: {filepath}")
 
     print("\nAll simulations complete!")
