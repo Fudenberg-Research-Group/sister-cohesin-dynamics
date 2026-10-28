@@ -62,8 +62,7 @@ independently on each chromatid.
 
 ```markdown
 The lattice stage can generate all 270 parameter combinations. The polymer
-stage additionally requires `trajectory_4000_0.gsd` through
-`trajectory_4000_4.gsd`;
+stage additionally requires pre-equilibrated input.
 
 ```bash
 python S8h_lattice.py $SLURM_ARRAY_TASK_ID        # --array=1-270, run lattice simulations first
