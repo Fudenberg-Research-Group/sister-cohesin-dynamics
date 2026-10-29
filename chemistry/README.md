@@ -133,5 +133,3 @@ Beyond the usual numpy/scipy/matplotlib stack, this pipeline additionally
 needs:
 
 - `sympy` (symbolic CRN solving, all three steps)
-- `tellurium` (ODE simulation via Antimony/RoadRunner, Step2 and Step3)
-- `pandas` (Step3)
