@@ -132,8 +132,22 @@ def simulate_network(params, t_end, n_points):
 
 
 def calculate_sister_RAD21_bound_time(K_RacPW_Rac_free, B_W_sister, B_R_sister):
-    # K_RPW_R_free * N_W * F_W - F_R_sister*N_R/tau_R
-    ### F_R is the fraction of bounded RAD21, T_W is the total number of bounded Wapl
+    """Effective RAD21 residence time on sister-linking cohesin, in seconds.
+
+    Sister cohesin releases RAD21 only from the WAPL-bound state
+    (RacPW -> Rac_free + P + W), so the release flux is
+    K_RacPW_Rac_free * B_W_sister. Dividing the bound pool by that flux,
+
+        tau_R = B_R_sister / (K_RacPW_Rac_free * B_W_sister),
+
+    is the same balance as the first equation of rhs_coh, solved for tau_R.
+
+    Args:
+        K_RacPW_Rac_free: release rate constant from RacPW, in 1/s.
+        B_W_sister: number of WAPL-bound sister cohesins (RacPW).
+        B_R_sister: total number of RAD21-bound sister cohesins
+            (Rac + RacP + RacPS + RacPW).
+    """
     return B_R_sister/(K_RacPW_Rac_free * B_W_sister)
 
 
