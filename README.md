@@ -43,7 +43,7 @@ The workflow consists of four stages spanning biochemical kinetics, one-dimensio
 ## Requirements
 
 - **`chemistry/`**: `sympy`, `tellurium`, `pandas`
-- **`discrete_time_extrusion_sister/`**: `numpy`, `numba`; `cupy` is optional for GPU acceleration
+- **`discrete_time_extrusion_sister/`**: `numpy`, `numba`
 - **`polymer_sister_chromatids/`**: [`HOOMD-blue`](https://hoomd-blue.readthedocs.io/), [`polychrom-hoomd`](https://github.com/open2c/polychrom-hoomd), `gsd`
 - **`analysis/`**: `numpy`, `scipy`, `h5py`, `gsd`, `cooler`, `cooltools`, `polykit`, `matplotlib`, `pandas`
 

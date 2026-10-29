@@ -1,10 +1,9 @@
 #
-#   conda env create -f env/environment.yml
+#   conda env create -f environment.yml
 #   conda activate sister-cohesin
 #
 # HOOMD-blue must be 3.x: the polymer scripts use hoomd.md.methods.NVE,
-# which was removed in 4.0. Drop the [build=*gpu*] selector and cupy to
-# install on a machine without a GPU.
+# which was removed in 4.0.
 
 name: sister-cohesin
 
@@ -16,7 +15,6 @@ dependencies:
   - pip
   - hoomd==3.11[build=*gpu*]
   - gsd==2.9
-  - cupy
   - numpy<1.24
   - scipy
   - numba
@@ -25,6 +23,9 @@ dependencies:
   - joblib
   - ipython
   - notebook
+  - sympy
+  - h5py
+  - cooler
 
   - pip:
     # Pinned to the commits used for the manuscript. Note that cooltools is

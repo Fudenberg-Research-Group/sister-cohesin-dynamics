@@ -29,7 +29,10 @@ offset by `+320000`, so an aligned linker is the bond `(i, i + 320000)`.
 ## Running
 
 ```bash
-python WT_dS_polymer.py $SLURM_ARRAY_TASK_ID        # --array=1-5
+python WT_dS_polymer.py --condition WT --replica 0
+python WT_dS_polymer.py --condition dS --replica 0
+python dW_dSdW_polymer.py --condition dW --replica 0
+python dW_dSdW_polymer.py --condition dSdW --replica 0
 ```
 One example pre-equilibrated input, `input/trajectory_4000_0.gsd`
 (replica 0), is included in this repository. The full manuscript simulations
@@ -60,7 +63,6 @@ independently on each chromatid.
 | Linker separation | 200-400 kb in 25 kb steps |
 | Replicas | 5 |
 
-```markdown
 The lattice stage can generate all 270 parameter combinations. The polymer
 stage additionally requires pre-equilibrated input.
 

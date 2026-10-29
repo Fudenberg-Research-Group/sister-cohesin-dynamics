@@ -37,11 +37,12 @@ pipeline).
 
 ## Environment
 
-- Python (conda env `discrete-extrusion`)
-- numpy, numba (CPU backend); cupy is optional or a GPU backend
+The lattice simulations use the CPU/Numba backend.
+From the repository root, create and activate the environment with:
 
 ```bash
-conda activate discrete-extrusion
+conda env create -f environment.yml
+conda activate sister-cohesin
 ```
 
 ## Input data
@@ -139,7 +140,7 @@ Both designs cover the same 16 h of G2, at different lattice time resolutions:
 The step counts differ because `bp_per_site` differs between the condition
 families (2500 vs 500), so one lattice step is 1.25 s in the 12h conditions and
 0.25 s in the 7h ones.
-````
+
 ## Output
 
 Each run writes to `output/tau{tau}h/{condition}_alpha_{...}_tau_{...}h_beta{...}_gamma{...}/`:
