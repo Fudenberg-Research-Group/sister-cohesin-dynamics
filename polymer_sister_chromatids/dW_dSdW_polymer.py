@@ -5,9 +5,8 @@ than the polymer monomer spacing, so positions are divided by SCALE and the
 lattice output lives one level deeper (factor5/).
 """
 
-import os
-
 import argparse
+import os
 
 import polymer_common as pc
 
@@ -18,6 +17,7 @@ CONDITIONS = {
 
 # Lattice sites per polymer monomer for these conditions (bp_per_site = 500).
 SCALE = 5
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -36,6 +36,7 @@ def parse_args():
         help="Zero-based replica index (0-4).",
     )
     return parser.parse_args()
+
 
 def main():
     args = parse_args()
