@@ -1,5 +1,10 @@
+"""Generate lattice extrusion parameters for SORORIN depletion, 7 h readout.
+
+As dS12h_rates.py, but the rates are read out at (6 h + 8 h) / 2 = 7 h and the
+lattice stage runs for 6 h. Used as phase 1 of the two-phase dSORORIN+dWAPL
+runs.
+"""
 import json
-from itertools import product
 from pathlib import Path
 
 import numpy as np
@@ -29,20 +34,17 @@ def load_config(filename):
     with open(SCRIPT_DIR / filename, "r") as f:
         return json.load(f)
 
-# Define the residence time [in hours]
-# Chemistry parameter
+
+# RAD21 residence time, in hours (chemistry input).
 RESIDENCE_TIMES_HOURS = [11]
 
 # Downstream lattice/polymer parameters
 SISTER_DAMPING_FACTORS = [100]
 COLLISION_RELEASE_PROBS = [1e-6]
 BYPASS_PROBS = [1e-4]
-# COLLISION_RELEASE_PROBS = np.logspace(-5, -4, 20)
 
-pairs = list(product(RESIDENCE_TIMES_HOURS, SISTER_DAMPING_FACTORS))
 
-# Physical constants
-NUM_SISTERCS = 7764
+# Cohesin copy numbers
 NUM_EXTRUDERS = 7764
 GENOMIC_REGION_SIZE_BP = 800_000_000
 BP_PER_SITE = 500
@@ -106,10 +108,7 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     paras_dict_ext_coh_local = {str(key): value for key, value in paras_dict_local.items()}
 
     # Simulate model for 8h + 6h = 14h
-    # Model_ext_coh = build_model(model_ext_coh, paras_dict_ext_coh_local)
-    Model_ext_coh = build_model(
-        MODEL_EXT_COH_TEMPLATE,
-        paras_dict_ext_coh_local)
+    Model_ext_coh = build_model(MODEL_EXT_COH_TEMPLATE, paras_dict_ext_coh_local)
     r_ext_coh = te.loada(Model_ext_coh)
     Model_ext_coh_dS = r_ext_coh.simulate(0, 3600*18, 3600*18)
 
@@ -118,28 +117,19 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
 
     df_dS = pd.DataFrame(Model_ext_coh_dS, columns=columns)
 
-    index_start_S8h = 3600*8 - 1
-    # NUM_SISTERCS_start_S8h = int((df_dS['Rac'][index_start_S8h]  + df_dS['RacPS'][index_start_S8h] +
-    #                   df_dS['RacP'][index_start_S8h] + df_dS['RacPW'][index_start_S8h]))
-
-    # Calculate LEF_sep and velocity at 7h (6h+8h)/2=7h
-
     analysis_time_hours = config['simulation_parameters']['analysis_timepoint_hours']
 
     analysis_index = 3600 * analysis_time_hours - 1
-    total_bound_ext = (df_dS['R'][analysis_index] + df_dS['RN'][analysis_index] +
-                       df_dS['RP'][analysis_index] + df_dS['RPW'][analysis_index])
-    bound_extC_ratio = total_bound_ext / (paras_dict_coh_local[N_R]*0.5)
 
-    total_lef_per_bp = int(NUM_EXTRUDERS) / (NUM_LATTICE_SITES * BP_PER_SITE)
+    total_lef_per_bp = NUM_EXTRUDERS / (NUM_LATTICE_SITES * BP_PER_SITE)
 
     total_sister_rad21 = (df_dS['RacPS'][analysis_index] + df_dS['RacPW'][analysis_index] +
                           df_dS['RacP'][analysis_index] + df_dS['Rac'][analysis_index])
 
     sister_rad21_lifetime_at_analysis = calculate_sister_RAD21_bound_time(
-        K_RacPW_Rac_free = paras_dict_ext_coh_local['K_RacPW_Rac_free'], \
-        B_W_sister = df_dS['RacPW'][analysis_index], \
-        B_R_sister = total_sister_rad21)
+        K_RacPW_Rac_free=paras_dict_ext_coh_local['K_RacPW_Rac_free'],
+        B_W_sister=df_dS['RacPW'][analysis_index],
+        B_R_sister=total_sister_rad21)
 
     # Calculate transition rates
     rates = {
@@ -157,17 +147,16 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     with open(SCRIPT_DIR / config["output_template_file"], "r") as f:
         output_params = json.load(f)
 
-    # establiment, 2909 is the number of sistercs at S8h for 800mb
+    # establishment, 2909 is the number of sistercs at S8h for 800mb
     gamma_constant = 2909/residence_time/(1-np.exp(-8/residence_time))
     sister_rad21_lifetime_hours = float(sister_rad21_lifetime_at_analysis / 3600)
 
     # Calculate the number of sisterCs at S8h using the birth-death model
     num_sister_cohesins_s8h = gamma_constant * sister_rad21_lifetime_hours * (1 - np.exp(-8 / sister_rad21_lifetime_hours))
-    # N_sister_S14h = num_sister_cohesins_s8h * np.exp(-6 / sister_rad21_lifetime_hours)
 
     output_params["LEF_on_rate"]["A"] = float(rates['R_free_to_RN'])
     output_params["LEF_off_rate"]["A"] = float(rates['RPW_R_free'])
-    output_params["LEF_diffusion_rate"]["A"] = float(0.25)
+    output_params["LEF_diffusion_rate"]["A"] = 0.25
 
     output_params["LEF_stalled_off_rate"]["A"] = float(rates['RPW_R_free'])
     output_params["LEF_transition_rates"]["21"]["A"] = float(rates['R_RN'])
@@ -181,11 +170,9 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     output_params["bp_per_site"] = BP_PER_SITE
     output_params["region_size_bp"] = NUM_LATTICE_SITES * BP_PER_SITE
     output_params["steps"] = 6 * 3600
-    # output_params["num_of_sisters"] = config['simulation_parameters']['num_of_sisters']
     output_params["num_of_sisters"] = int(num_sister_cohesins_s8h)
     output_params["sister_damping_factor"] = sister_damping
     output_params["sister_lifetime"] = int(sister_rad21_lifetime_at_analysis)
-
     output_params["collision_release_prob"] = collision_prob
     output_params["bypass_prob"] = bypass_prob
 
@@ -193,7 +180,7 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
 
 
 def main():
-    """Main execution function"""
+    """Sweep all parameter combinations and write one JSON per point."""
     # Load configuration
     config = load_config('network_parameters_dS7h.json')
     # Create output directory
@@ -208,7 +195,7 @@ def main():
                     # Run simulation
                     params = run_simulation(config, residence_time, sister_damping, collision_prob, bypass_prob)
 
-                     # Save to file
+                    # Save to file
                     filename = (f"{config['output_prefix']}_"
                         f"alpha{sister_damping}_tau{residence_time}h_beta{k}_gamma{q}.json")
                     filepath = output_dir / filename

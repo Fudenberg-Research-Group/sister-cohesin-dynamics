@@ -1,8 +1,14 @@
+"""Generate lattice extrusion parameters for WAPL depletion (dWAPL).
+
+Two-stage solve: the WT network runs for 6 h from S8h, then WAPL is depleted
+and the network continues for 10 h with WAPL-dependent species scaled by
+remaining_level. Extruder rates and the sister RAD21 lifetime are read out at
+the analysis timepoint of the second stage.
+"""
+
 import json
-from itertools import product
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 import sympy as sym
 import tellurium as te
@@ -23,26 +29,22 @@ from crn_core import (
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
+
 # Load configuration files
 def load_config(filename):
     """Load configuration from JSON file"""
     with open(SCRIPT_DIR / filename, 'r') as f:
         return json.load(f)
 
-# Define the ranges for residence time and damping values
-# Chemistry parameter
+# RAD21 residence time, in hours (chemistry input).
 RESIDENCE_TIMES_HOURS = [11]
 
 # Downstream lattice/polymer parameters
 SISTER_DAMPING_FACTORS = [100]
 COLLISION_RELEASE_PROBS = [1e-7]
-# COLLISION_RELEASE_PROBS = np.logspace(-6, -4, 40)
 BYPASS_PROBS = [1e-5]
 
-# pairs = list(product(RESIDENCE_TIMES_HOURS, SISTER_DAMPING_FACTORS))
-
-# Physical constants
-NUM_SISTERCS = 7764
+# Cohesin copy numbers
 NUM_EXTRUDERS = 7764
 GENOMIC_REGION_SIZE_BP = 800_000_000
 BP_PER_SITE = 500
@@ -134,52 +136,26 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     paras_dict_since_6h_dW = paras_dict_coh_local | paras_dict_ext_local | init_conditions_ext_coh_dWapl_6h
     paras_dict_ext_coh_since_6h_dW = {str(key): value for key, value in paras_dict_since_6h_dW.items()}
     Model_ext_coh_since_6h_dW = build_model(MODEL_EXT_COH_TEMPLATE, paras_dict_ext_coh_since_6h_dW)
-    # print(model_ext_coh)
-    # Load the modes
+
     r_ext_coh_since_6h_dW = te.loada(Model_ext_coh_since_6h_dW)
     # Simulate the model for another 10h
     Model_ext_coh_since_6h_dW = r_ext_coh_since_6h_dW.simulate(0, 3600*10, 3600*10)
 
     df_since_6h = pd.DataFrame(Model_ext_coh_since_6h_dW, columns=columns)
 
-    '''
-    start_time = 0
-    end_time = 3600 * 10 - 1
-    bound_sisterC_start = (df_WT['Rac'][start_time] +  df_WT['RacPS'][start_time] +
-                       df_WT['RacP'][start_time] + df_WT['RacPW'][start_time])
-    bound_sisterC_end = (df_since_6h['Rac'][end_time] +  df_since_6h['RacPS'][end_time] +
-                       df_since_6h['RacP'][end_time] + df_since_6h['RacPW'][end_time])
-
-    # num_used_in_bypass = bound_sisterC_end/bound_sisterC_start*2909
-    '''
-
     analysis_time_hours = config['simulation_parameters']['analysis_timepoint_hours']
     analysis_index = 3600 * analysis_time_hours - 1
 
-    # Calculate metrics
-    total_bound_ext = (df_since_6h['R'][analysis_index] + df_since_6h['RN'][analysis_index] +
-                       df_since_6h['RP'][analysis_index] + df_since_6h['RPW'][analysis_index])
-
-    bound_extC_ratio = total_bound_ext / (paras_dict_coh_local[N_R]*0.5)
-    total_lef_per_bp = int(NUM_EXTRUDERS) / GENOMIC_REGION_SIZE_BP
+    total_lef_per_bp = NUM_EXTRUDERS / GENOMIC_REGION_SIZE_BP
 
     total_sister_rad21 = (df_since_6h['RacPS'][analysis_index] + df_since_6h['RacPW'][analysis_index] +
                           df_since_6h['RacP'][analysis_index] + df_since_6h['Rac'][analysis_index])
 
     sister_rad21_lifetime_at_analysis = calculate_sister_RAD21_bound_time(
-        K_RacPW_Rac_free = paras_dict_ext_coh_since_6h_dW['K_RacPW_Rac_free'], \
-        B_W_sister = df_since_6h['RacPW'][analysis_index], \
-        B_R_sister = total_sister_rad21)
+        K_RacPW_Rac_free=paras_dict_ext_coh_since_6h_dW['K_RacPW_Rac_free'],
+        B_W_sister=df_since_6h['RacPW'][analysis_index],
+        B_R_sister=total_sister_rad21)
 
-    '''
-    total_extrusive_rad21 = (df_since_6h['RPW'][analysis_index] +
-                             df_since_6h['RP'][analysis_index] + df_since_6h['R'][analysis_index] +
-                             df_since_6h['RN'][analysis_index])
-    extruder_rad21_lifetime_at_analysis = calculate_extrusive_RAD21_bound_time(
-        K_RPW_R_free = paras_dict_ext_coh_since_6h_dW['Kext_RPW_R_free'], \
-        B_W_extruder = df_since_6h['RPW'][analysis_index], \
-        B_R_extruder = total_extrusive_rad21)
-    '''
     # Calculate transition rates
     rates = {
         'R_free_to_RN': paras_dict_ext_coh_since_6h_dW['Kext_R_free_RN']*df_since_6h['N'][analysis_index],
@@ -198,7 +174,7 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
 
     output_params["LEF_on_rate"]["A"] = float(rates['R_free_to_RN'])
     output_params["LEF_off_rate"]["A"] = float(rates['RPW_R_free'])
-    output_params["LEF_diffusion_rate"]["A"] = float(0.25)
+    output_params["LEF_diffusion_rate"]["A"] = 0.25
 
     output_params["LEF_stalled_off_rate"]["A"] = float(rates['RPW_R_free'])
     output_params["LEF_transition_rates"]["21"]["A"] = float(rates['R_RN'])
@@ -212,11 +188,8 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     output_params["bp_per_site"] = BP_PER_SITE
     output_params["region_size_bp"] = GENOMIC_REGION_SIZE_BP
     output_params["steps"] = 10 * 3600
-
-    # output_params["num_of_sisters"] = config['simulation_parameters']['num_of_sisters']
     output_params["sister_damping_factor"] = sister_damping
     output_params["sister_lifetime"] = int(sister_rad21_lifetime_at_analysis)
-
     output_params["collision_release_prob"] = collision_prob
     output_params["bypass_prob"] = bypass_prob
 
