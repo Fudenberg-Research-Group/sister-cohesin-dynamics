@@ -38,7 +38,8 @@ One example pre-equilibrated input, `input/trajectory_4000_0.gsd`
 (replica 0), is included in this repository. The full manuscript simulations
 used five independently pre-equilibrated inputs, numbered 0–4.
 
-The condition is set at the top of the script (`condition_name`); the array
+The condition and zero-based replica index are selected with `--condition`
+and `--replica`; the array
 index selects the replica. Each run reads the last frame of the pre-equilibrated
 GSD, strips its existing `LEF` / `Sister` bonds, adds the bonds taken from the
 final frame of the lattice trajectories (`-1` entries dropped), FIRE-relaxes,
