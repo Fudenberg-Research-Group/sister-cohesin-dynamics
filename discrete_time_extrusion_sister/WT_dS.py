@@ -8,7 +8,6 @@ then writes synchronized extrusion trajectories for both chromatids.
 import argparse
 import time
 
-
 from discrete_time_extrusion.sister_lifecycle import (
     run_synchronized_trajectories_continue,
 )

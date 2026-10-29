@@ -6,9 +6,8 @@ bonds to a pre-equilibrated two-chromatid HOOMD system, then relaxes and runs
 recorded Langevin production.
 """
 
-import os
-
 import argparse
+import os
 
 import polymer_common as pc
 
@@ -19,6 +18,7 @@ CONDITIONS = {
 
 # Lattice sites per polymer monomer for these conditions (bp_per_site = 2500).
 SCALE = 1
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -38,6 +38,7 @@ def parse_args():
         help="Zero-based replica index (0-4).",
     )
     return parser.parse_args()
+
 
 def main():
     args = parse_args()
