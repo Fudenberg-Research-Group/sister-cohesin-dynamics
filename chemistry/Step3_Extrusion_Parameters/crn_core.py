@@ -1,4 +1,4 @@
-"""Cohesin reaction networks: symbolic rate solutions and model template.
+"""Cohesin reaction networks: symbolic rate solutions and ODE integration.
 
 Two coupled networks are defined here:
 
@@ -8,7 +8,7 @@ Two coupled networks are defined here:
   extrusive -- loop-extruding cohesin (R states), with NIPBL in place of
                SORORIN
 
-For each network mass-action equations (rhs_coh, rhs_ext) are
+For each network mass-action kinetics (rhs_coh, rhs_ext) are
 solved symbolically for the rate constants, once at import time. The six
 *_rates.py scripts then substitute condition-specific numbers into those
 solutions and integrate the network with simulate_network.
@@ -59,8 +59,7 @@ rhs_ext = [ Kext_RN_R - 1 / tau_N_ext,  # NIPBL unbinding kinetics
 
 sol_rates_ext = sym.solve(rhs_ext, rates_ext)
 
-## Initial-condition species of the combined network. These names must match
-## the species declared in MODEL_EXT_COH_TEMPLATE below.
+# Initial-condition names: each SPECIES entry plus "_init". The *_rates.py scripts unpack sym.symbols() of this string positionally, so the order must not change.
 INIT_SYMBOL_NAMES = (
     "Rac_free_init Rac_init RacP_init RacPW_init RacPS_init "
     "R_free_init RN_init R_init RP_init RPW_init "
@@ -75,7 +74,20 @@ SPECIES = ("Rac", "P", "RacP", "S", "RacPS", "W", "RacPW",
 
 
 def _network_rhs(t, y, k):
-    """Mass-action right-hand side of the reactions in MODEL_EXT_COH_TEMPLATE."""
+    """Mass-action right-hand side of the combined network.
+
+    Cohesive (sister-linking) cohesin:
+        Rac + P  <-> RacP
+        RacP + S <-> RacPS
+        RacP + W <-> RacPW
+        RacPW     -> Rac_free + P + W
+    Extrusive (loop-extruding) cohesin:
+        R_free + N -> RN
+        RN        <-> R + N
+        R + P     <-> RP
+        RP + W    <-> RPW
+        RPW        -> R_free + P + W
+    """
     Rac, P, RacP, S, RacPS, W, RacPW, Rac_free, R_free, N, RN, R, RP, RPW = y
 
     # cohesive network
@@ -110,13 +122,7 @@ def _network_rhs(t, y, k):
 
 
 def simulate_network(params, t_end, n_points):
-    """Integrate the combined network from the *_init values in params.
-
-    Replaces te.loada(build_model(MODEL_EXT_COH_TEMPLATE, params)).simulate(
-    0, t_end, n_points): the same time grid (n_points evenly spaced, both
-    endpoints included, so the spacing is slightly above 1 s) and the same
-    columns, returned as a DataFrame.
-    """
+    """Integrate the combined network from the *_init values in params."""
     k = {str(key): float(value) for key, value in params.items()}
     y0 = [k[f"{s}_init"] for s in SPECIES]
     t = np.linspace(0, t_end, n_points)
@@ -130,10 +136,6 @@ def calculate_sister_RAD21_bound_time(K_RacPW_Rac_free, B_W_sister, B_R_sister):
     ### F_R is the fraction of bounded RAD21, T_W is the total number of bounded Wapl
     return B_R_sister/(K_RacPW_Rac_free * B_W_sister)
 
-def calculate_extrusive_RAD21_bound_time(K_RPW_R_free, B_W_extruder, B_R_extruder):
-    # K_RPW_R_free * N_W * F_W - F_R_sister*N_R/tau_R
-    ### F_R is the fraction of bounded RAD21, T_W is the total number of bounded Wapl
-    return B_R_extruder/(K_RPW_R_free * B_W_extruder)
 
 def calculate_cohesive_parameters(config, residence_time):
     """
@@ -163,6 +165,7 @@ def calculate_cohesive_parameters(config, residence_time):
         base['F_R_sister'],
         base['N_R'] * base['N_R_fraction'],
     ]
+
 
 def calculate_extrusive_parameters(config):
     """
