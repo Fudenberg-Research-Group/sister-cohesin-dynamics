@@ -5,9 +5,9 @@ loads condition-specific biochemical parameters and paired linker anchors,
 then writes synchronized extrusion trajectories for both chromatids.
 """
 
+import argparse
 import time
 
-import argparse
 
 from discrete_time_extrusion.sister_lifecycle import (
     run_synchronized_trajectories_continue,
@@ -19,6 +19,7 @@ CONDITIONS = {
     "WT": "WT12h",
     "dS": "dS12h",
 }
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -38,6 +39,7 @@ def parse_args():
         help="Zero-based replica index (0-4).",
     )
     return parser.parse_args()
+
 
 def main():
     args = parse_args()
