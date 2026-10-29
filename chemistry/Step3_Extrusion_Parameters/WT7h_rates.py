@@ -1,8 +1,13 @@
+"""Generate lattice extrusion parameters for WT over the 6 h window after S8h.
+
+Solves the cohesin reaction network for the WT condition and reads out
+extruder state-transition rates at the analysis timepoint. Used as phase 1
+of the two-phase dWAPL and dSORORIN+dWAPL runs.
+"""
+
 import json
-from itertools import product
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 import sympy as sym
 import tellurium as te
@@ -14,7 +19,6 @@ from crn_core import (
     build_model,
     calculate_cohesive_parameters,
     calculate_extrusive_parameters,
-    calculate_sister_RAD21_bound_time,
     paras_coh,
     paras_ext,
     sol_rates_coh,
@@ -23,39 +27,34 @@ from crn_core import (
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
-# Load configuration files
+
 def load_config(filename):
     """Load configuration from JSON file"""
     with open(SCRIPT_DIR / filename, 'r') as f:
         return json.load(f)
 
-# Define the residence time [in hours]
-# Chemistry parameter
+# RAD21 residence time, in hours (chemistry input).
 RESIDENCE_TIMES_HOURS = [11]
 
 # Downstream lattice/polymer parameters
 SISTER_DAMPING_FACTORS = [100]
 COLLISION_RELEASE_PROBS = [1e-6]
 BYPASS_PROBS = [1e-4]
-# COLLISION_RELEASE_PROBS = np.logspace(-5, -4, 20)
 
-pairs = list(product(RESIDENCE_TIMES_HOURS, SISTER_DAMPING_FACTORS))
-
-# Physical constants
-NUM_SISTERCS = 7764
+# Cohesin copy numbers
 NUM_EXTRUDERS = 7764
 GENOMIC_REGION_SIZE_BP = 800_000_000
 BP_PER_SITE = 500
 NUM_LATTICE_SITES = GENOMIC_REGION_SIZE_BP // BP_PER_SITE
 
 
-def run_simulation(config, residence_time, sister_damping, collision_release_prob, bypass_prob):
-    """
-    Run the simulation for given residence_time and sister_damping
-    Returns the params dictionary ready to save
-    """
-    # NUM_SISTERCS = int(7765 * np.exp(7/residence_time))
+def run_simulation(config, residence_time, sister_damping, collision_prob, bypass_prob):
+    """Solve the reaction network and assemble one parameter set.
 
+    residence_time is in hours; sister_damping (alpha), collision_prob (beta)
+    and bypass_prob (gamma) are passed through to the lattice simulation
+    unchanged. Returns the dict that gets written as JSON.
+    """
     # Calculate parameter values
     paras_values_coh = calculate_cohesive_parameters(config, residence_time)
     paras_dict_coh_local = dict(zip(paras_coh, paras_values_coh))
@@ -105,23 +104,13 @@ def run_simulation(config, residence_time, sister_damping, collision_release_pro
     r_ext_coh = te.loada(Model_ext_coh)
     Model_ext_coh_WT = r_ext_coh.simulate(0, 3600*6, 3600*6)
 
-    columns = ['time', 'Rac',  'P', 'RacP', 'S', 'RacPS', 'W', 'RacPW',
+    columns = ['time', 'Rac', 'P', 'RacP', 'S', 'RacPS', 'W', 'RacPW',
            'Rac_free', 'R_free', 'N', 'RN', 'R', 'RP', 'RPW']
 
     df_WT = pd.DataFrame(Model_ext_coh_WT, columns=columns)
 
-    # Calculate LEF_sep and velocity at 3h
     analysis_hours = config['simulation_parameters']['analysis_timepoint_hours']
     index = 3600 * analysis_hours - 1
-    total_bound_ext = (df_WT['R'][index] + df_WT['RN'][index] +
-                       df_WT['RP'][index] + df_WT['RPW'][index])
-    bound_extC_ratio = total_bound_ext / (paras_dict_coh_local[N_R]*0.5)
-    extC_bound_frac =  total_bound_ext / (total_bound_ext + df_WT['R_free'][index])
-    #
-    extC_value = int(NUM_EXTRUDERS * bound_extC_ratio)
-    # velocity_9h = 1/5 * total_bound_ext / df_WT['RN'][index]
-    # LEF_sep_4h = int(LATTICE_SIZE * extC_bound_frac / (extC_value / 2))
-
     total_lef_per_bp = int(NUM_EXTRUDERS) / GENOMIC_REGION_SIZE_BP
 
     # Calculate transition rates
@@ -137,7 +126,7 @@ def run_simulation(config, residence_time, sister_damping, collision_release_pro
     }
 
     # Load base parameters and update
-    with open(f"extrusion_dict_RN_RB_RP_RW_HBD_WT.json", "r") as f:
+    with open(SCRIPT_DIR / "extrusion_dict_RN_RB_RP_RW_HBD_WT.json") as f:
         output_params = json.load(f)
 
     output_params["LEF_on_rate"]["A"] = float(rates['R_free_to_RN'])
@@ -153,22 +142,20 @@ def run_simulation(config, residence_time, sister_damping, collision_release_pro
     output_params["LEF_transition_rates"]["43"]["A"] = float(rates['RPW_RP'])
 
     output_params["Total_LEF_per_bp"] = total_lef_per_bp
-    # output_params["velocity_multiplier"] = float(velocity_9h)
     output_params["bp_per_site"] = BP_PER_SITE
     output_params["region_size_bp"] = NUM_LATTICE_SITES * BP_PER_SITE
     output_params["steps"] = 6 * 3600
-    # output_params["num_of_sisters"] = config['simulation_parameters']['num_of_sisters']
     output_params["num_of_sisters"] = 2909
     output_params["sister_damping_factor"] = sister_damping
     output_params["sister_lifetime"] = residence_time * 3600
-    output_params["collision_release_prob"] = collision_release_prob
+    output_params["collision_release_prob"] = collision_prob
     output_params["bypass_prob"] = bypass_prob
 
     return output_params
 
 
 def main():
-    """Main execution function"""
+    """Sweep all parameter combinations and write one JSON per point."""
     # Load configuration
     config = load_config('network_parameters_WT7h.json')
 
@@ -200,5 +187,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
