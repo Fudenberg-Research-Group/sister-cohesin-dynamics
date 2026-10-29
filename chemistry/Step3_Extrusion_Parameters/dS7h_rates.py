@@ -8,21 +8,18 @@ import json
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import sympy as sym
-import tellurium as te
 
 from crn_core import (
     INIT_SYMBOL_NAMES,
-    MODEL_EXT_COH_TEMPLATE,
     N_R,
     N_S,
-    build_model,
     calculate_cohesive_parameters,
     calculate_extrusive_parameters,
     calculate_sister_RAD21_bound_time,
     paras_coh,
     paras_ext,
+    simulate_network,
     sol_rates_coh,
     sol_rates_ext,
 )
@@ -109,15 +106,8 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     paras_dict_local = paras_dict_coh_local | paras_dict_ext_local | init_conditions_ext_coh
     paras_dict_ext_coh_local = {str(key): value for key, value in paras_dict_local.items()}
 
-    # Simulate model for 8h + 6h = 14h
-    Model_ext_coh = build_model(MODEL_EXT_COH_TEMPLATE, paras_dict_ext_coh_local)
-    r_ext_coh = te.loada(Model_ext_coh)
-    Model_ext_coh_dS = r_ext_coh.simulate(0, 3600*18, 3600*18)
-
-    columns = ['time', 'Rac', 'P', 'RacP', 'S', 'RacPS', 'W', 'RacPW',
-           'Rac_free', 'R_free', 'N', 'RN', 'R', 'RP', 'RPW']
-
-    df_dS = pd.DataFrame(Model_ext_coh_dS, columns=columns)
+    # Integrate the network for 18 h, sampled at ~1 s.
+    df_dS = simulate_network(paras_dict_ext_coh_local, 3600 * 18, 3600 * 18)
 
     analysis_time_hours = config['simulation_parameters']['analysis_timepoint_hours']
 

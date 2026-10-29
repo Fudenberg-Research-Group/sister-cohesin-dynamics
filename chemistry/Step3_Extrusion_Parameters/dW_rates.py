@@ -9,21 +9,18 @@ the analysis timepoint of the second stage.
 import json
 from pathlib import Path
 
-import pandas as pd
 import sympy as sym
-import tellurium as te
 
 from crn_core import (
     INIT_SYMBOL_NAMES,
-    MODEL_EXT_COH_TEMPLATE,
     N_R,
     N_S,
-    build_model,
     calculate_cohesive_parameters,
     calculate_extrusive_parameters,
     calculate_sister_RAD21_bound_time,
     paras_coh,
     paras_ext,
+    simulate_network,
     sol_rates_coh,
     sol_rates_ext,
 )
@@ -103,14 +100,8 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     paras_dict_local = paras_dict_coh_local | paras_dict_ext_local | init_conditions_ext_coh
     paras_dict_ext_coh_local = {str(key): value for key, value in paras_dict_local.items()}
 
-    # Rebuild and simulate model
-    Model_ext_coh = build_model(MODEL_EXT_COH_TEMPLATE, paras_dict_ext_coh_local)
-    r_ext_coh = te.loada(Model_ext_coh)
-    Model_ext_coh_WT = r_ext_coh.simulate(0, 3600*18, 3600*18)
-
-    columns = ['time', 'Rac', 'P', 'RacP', 'S', 'RacPS', 'W', 'RacPW',
-               'Rac_free', 'R_free', 'N', 'RN', 'R', 'RP', 'RPW']
-    df_WT = pd.DataFrame(Model_ext_coh_WT, columns=columns)
+    # Integrate the network for 6h from S8h, sampled at ~1s
+    df_WT = simulate_network(paras_dict_ext_coh_local, 3600 * 18, 3600 * 18)
 
     ## Apply Wapl depletion at 6h since S8h (14h since start of S phase)
     time_6h = 3600 * 6 - 1
@@ -137,13 +128,8 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
 
     paras_dict_since_6h_dW = paras_dict_coh_local | paras_dict_ext_local | init_conditions_ext_coh_dWapl_6h
     paras_dict_ext_coh_since_6h_dW = {str(key): value for key, value in paras_dict_since_6h_dW.items()}
-    Model_ext_coh_since_6h_dW = build_model(MODEL_EXT_COH_TEMPLATE, paras_dict_ext_coh_since_6h_dW)
-
-    r_ext_coh_since_6h_dW = te.loada(Model_ext_coh_since_6h_dW)
-    # Simulate the model for another 10h
-    Model_ext_coh_since_6h_dW = r_ext_coh_since_6h_dW.simulate(0, 3600*10, 3600*10)
-
-    df_since_6h = pd.DataFrame(Model_ext_coh_since_6h_dW, columns=columns)
+    # Continue for 10 h after WAPL depletion.
+    df_since_6h = simulate_network(paras_dict_ext_coh_since_6h_dW, 3600 * 10, 3600 * 10)
 
     analysis_time_hours = config['simulation_parameters']['analysis_timepoint_hours']
     analysis_index = 3600 * analysis_time_hours - 1

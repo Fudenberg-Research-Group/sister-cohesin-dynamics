@@ -11,10 +11,13 @@ Two coupled networks are defined here:
 For each network mass-action equations (rhs_coh, rhs_ext) are
 solved symbolically for the rate constants, once at import time. The six
 *_rates.py scripts then substitute condition-specific numbers into those
-solutions and into MODEL_EXT_COH_TEMPLATE.
+solutions and integrate the network with simulate_network.
 """
 
+import numpy as np
+import pandas as pd
 import sympy as sym
+from scipy.integrate import solve_ivp
 
 ## Rates for cohesive network
 rates_coh = sym.symbols("K_RacP_RacPW, K_RacPW_RacP, K_RacP_RacPS, K_RacPS_RacP, K_RacP_Rac, K_Rac_RacP,  K_RacPW_Rac_free")
@@ -64,64 +67,63 @@ INIT_SYMBOL_NAMES = (
     "N_init S_init W_init P_init"
 )
 
-## models for combined cohesive and extrusive networks
-MODEL_EXT_COH_TEMPLATE  ='''
-    # Define species and parameters
+# ---- ODE integration  ---------------------------------
 
-    # Cohesive network
-    Rac + P -> RacP; K_Rac_RacP*Rac*P - K_RacP_Rac*RacP
-    RacP + S -> RacPS; K_RacP_RacPS*RacP*S - K_RacPS_RacP*RacPS
-    RacP + W -> RacPW; K_RacP_RacPW*RacP*W - K_RacPW_RacP*RacPW
-    RacPW -> Rac_free + P + W; K_RacPW_Rac_free*RacPW
+# Column order of the DataFrame returned by simulate_network.
+SPECIES = ("Rac", "P", "RacP", "S", "RacPS", "W", "RacPW",
+           "Rac_free", "R_free", "N", "RN", "R", "RP", "RPW")
 
-    # Extrusive network
-    R_free + N -> RN; Kext_R_free_RN*R_free*N
-    RN  -> R + N; Kext_RN_R*RN - Kext_R_RN*R*N
-    R + P -> RP; Kext_R_RP*R*P - Kext_RP_R*RP
-    RP + W -> RPW; Kext_RP_RPW*RP*W - Kext_RPW_RP*RPW
-    RPW -> R_free + P + W; Kext_RPW_R_free*RPW
 
-    # Rates for cohesive network,  7 rates
-    K_Rac_RacP = {K_Rac_RacP};
-    K_RacP_Rac = {K_RacP_Rac};
-    K_RacP_RacPS = {K_RacP_RacPS};
-    K_RacPS_RacP = {K_RacPS_RacP};
-    K_RacP_RacPW = {K_RacP_RacPW};
-    K_RacPW_RacP = {K_RacPW_RacP};
-    K_RacPW_Rac_free = {K_RacPW_Rac_free};
+def _network_rhs(t, y, k):
+    """Mass-action right-hand side of the reactions in MODEL_EXT_COH_TEMPLATE."""
+    Rac, P, RacP, S, RacPS, W, RacPW, Rac_free, R_free, N, RN, R, RP, RPW = y
 
-    # Rates for extrusive network, 8 rates
-    Kext_R_free_RN = {Kext_R_free_RN};
-    Kext_RN_R = {Kext_RN_R};
-    Kext_R_RN = {Kext_R_RN};
-    Kext_R_RP = {Kext_R_RP};
-    Kext_RP_R = {Kext_RP_R};
-    Kext_RP_RPW = {Kext_RP_RPW};
-    Kext_RPW_RP = {Kext_RPW_RP};
-    Kext_RPW_R_free = {Kext_RPW_R_free};
+    # cohesive network
+    v1 = k["K_Rac_RacP"] * Rac * P - k["K_RacP_Rac"] * RacP          # Rac + P <-> RacP
+    v2 = k["K_RacP_RacPS"] * RacP * S - k["K_RacPS_RacP"] * RacPS    # RacP + S <-> RacPS
+    v3 = k["K_RacP_RacPW"] * RacP * W - k["K_RacPW_RacP"] * RacPW    # RacP + W <-> RacPW
+    v4 = k["K_RacPW_Rac_free"] * RacPW                               # RacPW -> Rac_free + P + W
 
-    # Initial conditions
-    Rac_free = {Rac_free_init};
-    Rac = {Rac_init};
-    RacP = {RacP_init};
-    RacPW = {RacPW_init};
-    RacPS = {RacPS_init};
+    # extrusive network
+    v5 = k["Kext_R_free_RN"] * R_free * N                            # R_free + N -> RN
+    v6 = k["Kext_RN_R"] * RN - k["Kext_R_RN"] * R * N                # RN <-> R + N
+    v7 = k["Kext_R_RP"] * R * P - k["Kext_RP_R"] * RP                # R + P <-> RP
+    v8 = k["Kext_RP_RPW"] * RP * W - k["Kext_RPW_RP"] * RPW          # RP + W <-> RPW
+    v9 = k["Kext_RPW_R_free"] * RPW                                  # RPW -> R_free + P + W
 
-    R_free = {R_free_init};
-    RN = {RN_init};
-    R = {R_init};
-    RP = {RP_init};
-    RPW = {RPW_init};
+    return [
+        -v1,                    # Rac
+        -v1 + v4 - v7 + v9,     # P
+        v1 - v2 - v3,           # RacP
+        -v2,                    # S
+        v2,                     # RacPS
+        -v3 + v4 - v8 + v9,     # W
+        v3 - v4,                # RacPW
+        v4,                     # Rac_free
+        -v5 + v9,               # R_free
+        -v5 + v6,               # N
+        v5 - v6,                # RN
+        v6 - v7,                # R
+        v7 - v8,                # RP
+        v8 - v9,                # RPW
+    ]
 
-    N = {N_init};
-    S = {S_init};
-    W = {W_init};
-    P = {P_init};
-    '''
 
-def build_model(model, parameter_dict):
-    string_params = {str(k): v for k, v in parameter_dict.items()}
-    return model.format(**string_params)
+def simulate_network(params, t_end, n_points):
+    """Integrate the combined network from the *_init values in params.
+
+    Replaces te.loada(build_model(MODEL_EXT_COH_TEMPLATE, params)).simulate(
+    0, t_end, n_points): the same time grid (n_points evenly spaced, both
+    endpoints included, so the spacing is slightly above 1 s) and the same
+    columns, returned as a DataFrame.
+    """
+    k = {str(key): float(value) for key, value in params.items()}
+    y0 = [k[f"{s}_init"] for s in SPECIES]
+    t = np.linspace(0, t_end, n_points)
+    sol = solve_ivp(_network_rhs, (0, t_end), y0, method="LSODA", t_eval=t,
+                    args=(k,), rtol=1e-8, atol=1e-8)
+    return pd.DataFrame(np.column_stack([t, sol.y.T]), columns=("time",) + SPECIES)
+
 
 def calculate_sister_RAD21_bound_time(K_RacPW_Rac_free, B_W_sister, B_R_sister):
     # K_RPW_R_free * N_W * F_W - F_R_sister*N_R/tau_R
