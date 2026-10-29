@@ -1,16 +1,15 @@
-
 """
 S8h sweep, lattice simulations. Sweeps sister-linker separation and misalignment:assigns sister anchors with Gaussian misalignment,
 then runs each chromatid's lattice extrusion independently, using those anchors as static boundary stalls.
 Output the trajectories.
 """
 
-import sys
-import os
-import json
-import numpy as np
 import itertools
+import json
+import os
+import sys
 
+import numpy as np
 from discrete_time_extrusion.Translocator import Translocator
 from discrete_time_extrusion.boundaries.StaticBoundary import StaticBoundary
 from discrete_time_extrusion.extruders.MultistateExtruder import MultistateExtruder
@@ -24,6 +23,7 @@ SIGMA_KB_LIST = [50, 75, 100, 125, 150, 175]       # misalignment sigma, in kb
 SISTER_SEP = [200, 225, 250, 275, 300, 325, 350, 375, 400]
 NUM_SISTER_LIST = [round(800000 / s) for s in SISTER_SEP]
 REPLICA_IDS = np.arange(5)
+
 
 def extruder_pos_gaussian_misalign(N_sister_RAD21, iteration, chromosome_size, path):
 
@@ -111,6 +111,7 @@ def crosslink_chains_gaussian_misalign(N_monomers, iteration, N_crosslinks, sigm
     # Save files
     np.savetxt(f'{path}/anchor_{N_crosslinks}_{iteration}_sister1.txt', bond_array[:, 0])
     np.savetxt(f'{path}/anchor_{N_crosslinks}_{iteration}_sister2.txt', bond_array[:, 1])
+
 
 def main():
     process_id = int(sys.argv[1]) - 1

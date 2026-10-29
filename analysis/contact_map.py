@@ -14,16 +14,15 @@ Usage:
     python contact_map.py $SLURM_ARRAY_TASK_ID
 """
 
+import multiprocessing as mp
 import os
 import sys
 import time
-import multiprocessing as mp
 from functools import partial
 
-import numpy as np
-import h5py
 import gsd.hoomd
-
+import h5py
+import numpy as np
 import polychrom_hoomd.utils as utils
 from polykit.analysis import polymer_analyses
 from scipy.spatial import cKDTree
