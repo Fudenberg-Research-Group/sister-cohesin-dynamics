@@ -1,5 +1,10 @@
+"""Generate lattice extrusion parameters for SORORIN + WAPL depletion.
+
+Three-stage solve: SORORIN is depleted from S0h, the network runs to S14h,
+then WAPL is depleted and it continues for 10 h to S24h. Extruder rates and
+the post-depletion sister RAD21 lifetime are read out from the second stage.
+"""
 import json
-from itertools import product
 from pathlib import Path
 
 import numpy as np
@@ -23,26 +28,22 @@ from crn_core import (
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
-# Load configuration files
+
 def load_config(filename):
-    """Load configuration from JSON file"""
+    """Load configuration from JSON file."""
     with open(SCRIPT_DIR / filename, 'r') as f:
         return json.load(f)
 
-# Define the residence time [in hours]
-# Chemistry parameter
+
+# RAD21 residence time, in hours (chemistry input).
 RESIDENCE_TIMES_HOURS = [11]
 
 # Downstream lattice/polymer parameters
 SISTER_DAMPING_FACTORS = [100]
 COLLISION_RELEASE_PROBS = [1e-6]
 BYPASS_PROBS = [1e-4]
-# COLLISION_RELEASE_PROBS = np.logspace(-5, -4, 20)
 
-pairs = list(product(RESIDENCE_TIMES_HOURS, SISTER_DAMPING_FACTORS))
-
-# Physical constants
-NUM_SISTERCS = 7764
+# Cohesin copy numbers
 NUM_EXTRUDERS = 7764
 GENOMIC_REGION_SIZE_BP = 800_000_000
 BP_PER_SITE = 500
@@ -119,9 +120,9 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
                               df_dS['RacP'][ds7_analysis_index] + df_dS['Rac'][ds7_analysis_index])
 
     sister_rad21_lifetime_before_wapl_depletion = calculate_sister_RAD21_bound_time(
-        K_RacPW_Rac_free = paras_dict_ext_coh_local['K_RacPW_Rac_free'], \
-        B_W_sister = df_dS['RacPW'][ds7_analysis_index], \
-        B_R_sister = total_sister_rad21_S7h)
+        K_RacPW_Rac_free=paras_dict_ext_coh_local['K_RacPW_Rac_free'],
+        B_W_sister=df_dS['RacPW'][ds7_analysis_index],
+        B_R_sister=total_sister_rad21_S7h)
 
     ## Apply Wapl depletion at 14h  = 6h(Spahse) + 8h = 14h
     time_14h = 3600 * 14 - 1
@@ -151,36 +152,14 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     paras_dict_ext_coh_since_14h_dW = {str(key): value for key, value in paras_dict_since_14h_dW.items()}
 
     Model_ext_coh_since_14h_dW = build_model(MODEL_EXT_COH_TEMPLATE, paras_dict_ext_coh_since_14h_dW)
-    # print(model_ext_coh)
-    # Load the modes
     r_ext_coh_since_14h_dW = te.loada(Model_ext_coh_since_14h_dW)
     # Simulate the model for 10h
     Model_ext_coh_since_14h_dW = r_ext_coh_since_14h_dW.simulate(0, 3600*10, 3600*10)
 
     df_since_14h = pd.DataFrame(Model_ext_coh_since_14h_dW, columns=columns)
 
-    '''
-    start_time_0 = 0
-    start_time_S14h = 3600 * 14 - 1
-    end_time_S24h = 3600 * 10 - 1
-    bound_sisterC_0 = (df_dS['Rac'][start_time_0] +  df_dS['RacPS'][start_time_0] +
-                       df_dS['RacP'][start_time_0] + df_dS['RacPW'][start_time_0])
-    bound_sisterC_S14h = (df_dS['Rac'][start_time_S14h] +  df_dS['RacPS'][start_time_S14h] +
-                       df_dS['RacP'][start_time_S14h] + df_dS['RacPW'][start_time_S14h])
-    bound_sisterC_S24h = (df_since_14h['Rac'][end_time_S24h] +  df_since_14h['RacPS'][end_time_S24h] +
-                       df_since_14h['RacP'][end_time_S24h] + df_since_14h['RacPW'][end_time_S24h])
-    # num_used_in_bypass = bound_sisterC_S24h/bound_sisterC_S14h*1352
-    # num_used_in_bypass1 = bound_sisterC_S24h/bound_sisterC_0*initial_num_sister_cohesins
-    '''
-
     analysis_time_hours = config['simulation_parameters']['analysis_timepoint_hours']
     analysis_index = 3600 * analysis_time_hours - 1
-
-    # Calculate metrics
-    total_bound_ext = (df_since_14h['R'][analysis_index] + df_since_14h['RN'][analysis_index] +
-                       df_since_14h['RP'][analysis_index] + df_since_14h['RPW'][analysis_index])
-
-    bound_extC_ratio = total_bound_ext / (paras_dict_coh_local[N_R]*0.5)
 
     total_lef_per_bp = int(NUM_EXTRUDERS) / GENOMIC_REGION_SIZE_BP
 
@@ -188,9 +167,9 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
                           df_since_14h['RacP'][analysis_index] + df_since_14h['Rac'][analysis_index])
 
     sister_rad21_lifetime_after_wapl_depletion = calculate_sister_RAD21_bound_time(
-        K_RacPW_Rac_free = paras_dict_ext_coh_since_14h_dW['K_RacPW_Rac_free'], \
-        B_W_sister = df_since_14h['RacPW'][analysis_index], \
-        B_R_sister = total_sister_rad21)
+        K_RacPW_Rac_free=paras_dict_ext_coh_since_14h_dW['K_RacPW_Rac_free'],
+        B_W_sister=df_since_14h['RacPW'][analysis_index],
+        B_R_sister=total_sister_rad21)
 
     sister_rad21_lifetime_after_wapl_depletion_hours = float(
         sister_rad21_lifetime_after_wapl_depletion / 3600
@@ -207,13 +186,13 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
         'RPW_RP': paras_dict_ext_coh_since_14h_dW['Kext_RPW_RP'],
     }
 
-    # establiment, 2909 is the number of sistercs at S8h for 800mb
+    # establishment, 2909 is the number of sistercs at S8h for 800mb
     gamma_constant = 2909/residence_time/(1-np.exp(-8/residence_time))
     sister_rad21_lifetime_before_wapl_depletion_hours = float(
         sister_rad21_lifetime_before_wapl_depletion / 3600
     )
 
-    ### number used in bypass at S24h is 578
+    # Calculate the number
     N_sister_S8h = gamma_constant * sister_rad21_lifetime_before_wapl_depletion_hours * (
         1 - np.exp(-8 / sister_rad21_lifetime_before_wapl_depletion_hours)
     )
@@ -229,7 +208,7 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
 
     output_params["LEF_on_rate"]["A"] = float(rates['R_free_to_RN'])
     output_params["LEF_off_rate"]["A"] = float(rates['RPW_R_free'])
-    output_params["LEF_diffusion_rate"]["A"] = float(0.25)
+    output_params["LEF_diffusion_rate"]["A"] = 0.25
 
     output_params["LEF_stalled_off_rate"]["A"] = float(rates['RPW_R_free'])
     output_params["LEF_transition_rates"]["21"]["A"] = float(rates['R_RN'])
@@ -243,8 +222,6 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     output_params["bp_per_site"] = BP_PER_SITE
     output_params["region_size_bp"] = NUM_LATTICE_SITES * BP_PER_SITE
     output_params["steps"] = 10 * 3600
-
-    # output_params["num_of_sisters"] = config['simulation_parameters']['num_of_sisters']
     output_params["num_of_sisters"] = int(initial_num_sister_cohesins)
     output_params["sister_damping_factor"] = sister_damping
     output_params["sister_lifetime"] = int(sister_rad21_lifetime_after_wapl_depletion)
@@ -256,7 +233,7 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
 
 
 def main():
-    """Main execution function"""
+    """Sweep all parameter combinations and write one JSON per point."""
     # Load configuration
     config = load_config('network_parameters_dSdW.json')
 

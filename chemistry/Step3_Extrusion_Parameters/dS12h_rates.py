@@ -35,6 +35,7 @@ def load_config(filename):
     with open(SCRIPT_DIR / filename, 'r') as f:
         return json.load(f)
 
+
 # RAD21 residence time, in hours (chemistry input).
 RESIDENCE_TIMES_HOURS = [11]
 
