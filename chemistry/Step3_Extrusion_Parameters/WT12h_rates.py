@@ -14,6 +14,7 @@ import sympy as sym
 import tellurium as te
 
 from crn_core import (
+    INIT_SYMBOL_NAMES,
     MODEL_EXT_COH_TEMPLATE,
     N_R,
     N_S,
@@ -30,7 +31,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 
 
 def load_config(filename):
-    """Load configuration from JSON file"""
+    """Load configuration from JSON file."""
     with open(SCRIPT_DIR / filename, 'r') as f:
         return json.load(f)
 
@@ -76,8 +77,9 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
         paras_dict_ext_local[rate_symbol] = rate
 
     # Define symbolic initial conditions
-    Rac_free_init, Rac_init, RacP_init, RacPW_init, RacPS_init, R_free_init, RN_init, R_init, RP_init, RPW_init, N_init, S_init, W_init, P_init = sym.symbols(
-        "Rac_free_init, Rac_init, RacP_init, RacPW_init, RacPS_init, R_free_init, RN_init, R_init, RP_init, RPW_init, N_init, S_init, W_init, P_init")
+    (Rac_free_init, Rac_init, RacP_init, RacPW_init, RacPS_init,
+     R_free_init, RN_init, R_init, RP_init, RPW_init,
+     N_init, S_init, W_init, P_init) = sym.symbols(INIT_SYMBOL_NAMES)
 
     init_conditions_ext_coh = {
        Rac_free_init: 0,
