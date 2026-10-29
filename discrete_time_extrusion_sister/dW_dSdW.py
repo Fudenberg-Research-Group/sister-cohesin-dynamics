@@ -5,13 +5,12 @@ update() and the simulation continues as the post-depletion condition on the
 same translocators.
 """
 
+import argparse
 import time
 
-import argparse
-
 from discrete_time_extrusion.sister_lifecycle import (
-    update,
     run_synchronized_trajectories_continue,
+    update,
 )
 
 import simulation_setup as setup
@@ -20,6 +19,7 @@ CONDITIONS = {
     "dW": ("WT7h", "dW"),
     "dSdW": ("dS7h", "dSdW"),
 }
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -38,6 +38,7 @@ def parse_args():
         help="Zero-based replica index (0-4).",
     )
     return parser.parse_args()
+
 
 def main():
     args = parse_args()
