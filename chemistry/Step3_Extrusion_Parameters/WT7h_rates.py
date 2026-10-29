@@ -131,7 +131,7 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
 
     output_params["LEF_on_rate"]["A"] = float(rates['R_free_to_RN'])
     output_params["LEF_off_rate"]["A"] = float(rates['RPW_R_free'])
-    output_params["LEF_diffusion_rate"]["A"] = float(0.25)
+    output_params["LEF_diffusion_rate"]["A"] = 0
 
     output_params["LEF_stalled_off_rate"]["A"] = float(rates['RPW_R_free'])
     output_params["LEF_transition_rates"]["21"]["A"] = float(rates['R_RN'])
