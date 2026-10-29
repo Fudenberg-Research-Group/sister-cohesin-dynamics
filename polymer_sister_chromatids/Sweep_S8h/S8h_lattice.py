@@ -10,9 +10,9 @@ import os
 import sys
 
 import numpy as np
-from discrete_time_extrusion.Translocator import Translocator
 from discrete_time_extrusion.boundaries.StaticBoundary import StaticBoundary
 from discrete_time_extrusion.extruders.MultistateExtruder import MultistateExtruder
+from discrete_time_extrusion.Translocator import Translocator
 
 RATES_JSON = "WT_extrusion_rates.json"
 

@@ -1,23 +1,24 @@
 import json
+from itertools import product
+from pathlib import Path
+
 import numpy as np
+import pandas as pd
 import sympy as sym
 import tellurium as te
-import pandas as pd
-from pathlib import Path
-from itertools import product
 
 from crn_core import (
     MODEL_EXT_COH_TEMPLATE,
     N_R,
     N_S,
+    build_model,
+    calculate_cohesive_parameters,
+    calculate_extrusive_parameters,
+    calculate_sister_RAD21_bound_time,
     paras_coh,
     paras_ext,
     sol_rates_coh,
     sol_rates_ext,
-    build_model,
-    calculate_sister_RAD21_bound_time,
-    calculate_cohesive_parameters,
-    calculate_extrusive_parameters,
 )
 
 SCRIPT_DIR = Path(__file__).resolve().parent

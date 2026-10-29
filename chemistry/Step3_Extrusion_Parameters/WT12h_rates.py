@@ -1,49 +1,49 @@
+"""Generate lattice extrusion parameters for WT for tau = 11 h.
 
+Solves the cohesin reaction network for the WT condition,
+reads out extruder state-transition rates at the analysis timepoint, and
+writes one JSON per (alpha, tau, beta, gamma) point into the output
+directory named in network_parameters_WT12h.json.
+"""
 
 import json
-import numpy as np
+from pathlib import Path
+
+import pandas as pd
 import sympy as sym
 import tellurium as te
-import pandas as pd
-from pathlib import Path
-from itertools import product
 
 from crn_core import (
     MODEL_EXT_COH_TEMPLATE,
     N_R,
     N_S,
+    build_model,
+    calculate_cohesive_parameters,
+    calculate_extrusive_parameters,
     paras_coh,
     paras_ext,
     sol_rates_coh,
     sol_rates_ext,
-    build_model,
-    calculate_sister_RAD21_bound_time,
-    calculate_cohesive_parameters,
-    calculate_extrusive_parameters,
 )
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 
-# Load configuration files
+
 def load_config(filename):
     """Load configuration from JSON file"""
     with open(SCRIPT_DIR / filename, 'r') as f:
         return json.load(f)
 
-# Define the residence time [in hours]
-# Chemistry parameter
+
+# RAD21 residence time, in hours (chemistry input).
 RESIDENCE_TIMES_HOURS = [11]
 
 # Downstream lattice/polymer parameters
 SISTER_DAMPING_FACTORS = [100]
 COLLISION_RELEASE_PROBS = [1e-6]
 BYPASS_PROBS = [1e-4]
-# COLLISION_RELEASE_PROBS = np.logspace(-5, -4, 20)
 
-pairs = list(product(RESIDENCE_TIMES_HOURS, SISTER_DAMPING_FACTORS))
-
-# Physical constants
-NUM_SISTERCS = 7764
+# Cohesin copy numbers
 NUM_EXTRUDERS = 7764
 GENOMIC_REGION_SIZE_BP = 800_000_000
 BP_PER_SITE = 2500
@@ -51,9 +51,11 @@ NUM_LATTICE_SITES = GENOMIC_REGION_SIZE_BP // BP_PER_SITE
 
 
 def run_simulation(config, residence_time, sister_damping, collision_prob, bypass_prob):
-    """
-    Run the simulation for given residence_time and sister_damping
-    Returns the params dictionary ready to save
+    """Solve the reaction network and assemble one parameter set.
+
+    residence_time is in hours; sister_damping (alpha), collision_prob (beta)
+    and bypass_prob (gamma) are passed through to the lattice simulation
+    unchanged. Returns the dict that gets written as JSON.
     """
     # Calculate parameter values
     paras_values_coh = calculate_cohesive_parameters(config, residence_time)
@@ -117,17 +119,9 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
                        df_WT['RacP'][end_time] + df_WT['RacPW'][end_time])
     num_used_in_bypass = bound_sisterC_end/bound_sisterC_start*2909
 
-    # Calculate LEF_sep and velocity at 16h/2 = 8h
     analysis_hours = config['simulation_parameters']['analysis_timepoint_hours']
     index = 3600 * analysis_hours - 1
-    total_bound_ext = (df_WT['R'][index] + df_WT['RN'][index] +
-                       df_WT['RP'][index] + df_WT['RPW'][index])
-    bound_extC_ratio = total_bound_ext / (paras_dict_coh_local[N_R]*0.5)
-    extC_bound_frac =  total_bound_ext / (total_bound_ext + df_WT['R_free'][index])
-    extC_value = int(NUM_EXTRUDERS * bound_extC_ratio)
-    # velocity_9h = 1/5 * total_bound_ext / df_WT['RN'][index]
     total_lef_per_bp = int(NUM_EXTRUDERS) / GENOMIC_REGION_SIZE_BP
-    # LEF_sep_9h = int(LATTICE_SIZE * extC_bound_frac / (extC_value / 2))
     # Calculate transition rates
     rates = {
         'R_free_to_RN': paras_dict_ext_coh_local['Kext_R_free_RN'] * df_WT['N'][index],
@@ -141,7 +135,7 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     }
 
     # Load base parameters and update
-    with open(f"extrusion_dict_RN_RB_RP_RW_HBD_WT.json", "r") as f:
+    with open(SCRIPT_DIR / "extrusion_dict_RN_RB_RP_RW_HBD_WT.json") as f:
         output_params = json.load(f)
 
     output_params["LEF_on_rate"]["A"] = float(rates['R_free_to_RN'])
@@ -168,7 +162,7 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
 
 
 def main():
-    """Main execution function"""
+    """Sweep all parameter combinations and write one JSON per point."""
     # Load configuration
     config = load_config('network_parameters_WT12h.json')
 
@@ -199,5 +193,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

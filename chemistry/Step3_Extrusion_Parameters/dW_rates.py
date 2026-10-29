@@ -1,26 +1,24 @@
-
-
 import json
+from itertools import product
+from pathlib import Path
+
 import numpy as np
+import pandas as pd
 import sympy as sym
 import tellurium as te
-import pandas as pd
-from pathlib import Path
-from itertools import product
 
 from crn_core import (
     MODEL_EXT_COH_TEMPLATE,
     N_R,
     N_S,
+    build_model,
+    calculate_cohesive_parameters,
+    calculate_extrusive_parameters,
+    calculate_sister_RAD21_bound_time,
     paras_coh,
     paras_ext,
     sol_rates_coh,
     sol_rates_ext,
-    build_model,
-    calculate_sister_RAD21_bound_time,
-    calculate_extrusive_RAD21_bound_time,
-    calculate_cohesive_parameters,
-    calculate_extrusive_parameters,
 )
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -49,6 +47,7 @@ NUM_EXTRUDERS = 7764
 GENOMIC_REGION_SIZE_BP = 800_000_000
 BP_PER_SITE = 500
 NUM_LATTICE_SITES = GENOMIC_REGION_SIZE_BP // BP_PER_SITE
+
 
 def run_simulation(config, residence_time, sister_damping, collision_prob, bypass_prob):
     """
@@ -162,10 +161,6 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
                        df_since_6h['RP'][analysis_index] + df_since_6h['RPW'][analysis_index])
 
     bound_extC_ratio = total_bound_ext / (paras_dict_coh_local[N_R]*0.5)
-    # extC_bound_frac = total_bound_ext / (total_bound_ext + df_since_6h['R_free'][analysis_index])
-    # extC_value = int(NUM_SISTERCS * bound_extC_ratio)
-    # velocity_7h = 1/5 * total_bound_ext / df_since_8h['RN'][analysis_index]
-    # LEF_sep_13h = int(NUM_LATTICE_SITES * extC_bound_frac / (extC_value / 2))
     total_lef_per_bp = int(NUM_EXTRUDERS) / GENOMIC_REGION_SIZE_BP
 
     total_sister_rad21 = (df_since_6h['RacPS'][analysis_index] + df_since_6h['RacPW'][analysis_index] +
@@ -213,9 +208,7 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     output_params["LEF_transition_rates"]["34"]["A"] = float(rates['RP_RPW'])
     output_params["LEF_transition_rates"]["43"]["A"] = float(rates['RPW_RP'])
 
-
     output_params["Total_LEF_per_bp"] = total_lef_per_bp
-    # output_params["velocity_multiplier"] = float(velocity_8h)
     output_params["bp_per_site"] = BP_PER_SITE
     output_params["region_size_bp"] = GENOMIC_REGION_SIZE_BP
     output_params["steps"] = 10 * 3600
@@ -254,7 +247,6 @@ def main():
                     filename = (f"{config['output_prefix']}_"
                         f"alpha{sister_damping}_tau{residence_time}h_beta{k}_gamma{q}.json")
                     filepath = output_dir / filename
-
 
                     with open(filepath, "w") as f:
                         json.dump(params, f, indent=4)

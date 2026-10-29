@@ -5,19 +5,19 @@ of the sweep, places those crosslinks/LEF bonds onto the system, then
 FIRE-relaxes and runs recorded Langevin production.
 """
 
-import sys
-import os
-import json
-import hoomd
 import codecs
-import time
-import numpy as np
 import itertools
+import json
+import os
+import sys
+import time
 
-import polychrom_hoomd.log as log
+import hoomd
+import numpy as np
 import polychrom_hoomd.build as build
-import polychrom_hoomd.forces as forces
 import polychrom_hoomd.extrude as extrude
+import polychrom_hoomd.forces as forces
+import polychrom_hoomd.log as log
 
 # --- sweep definition; must stay identical to S8h_lattice.py ---
 NUMBER_OF_MONOMERS = 320000
