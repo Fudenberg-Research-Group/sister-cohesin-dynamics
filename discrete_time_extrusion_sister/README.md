@@ -92,6 +92,26 @@ they would experimentally. Running two independent simulations instead would
 discard that history. `prune_unbound_LEFs` is correspondingly `True` in phase 1
 (to reach a steady state) and `False` in phase 2.
 
+### Extruder diffusion
+
+Extruder diffusion is off in the main results (`LEF_diffusion_rate = 0`).
+When enabled, every lattice step each unstalled extruder leg independently
+attempts a one-site move with probability p = k * dt, to the left or right
+with equal probability (`DiffusionEngines_Sister.py`). Here k is
+`LEF_diffusion_rate` (1/s), dt the lattice time step and dx the site size
+(`bp_per_site`). Each leg therefore has mean-squared displacement
+<dx^2> = 2 D t with
+
+    2D = p * dx^2 / dt = k * dx^2.
+
+Following the convention of single molecule experiments, we report 2D.
+In the two-phase runs (dWAPL / dSORORIN+dWAPL), the diffusion probability 
+is set by the phase-1 parameters (WT7h, dS7h) and is not changed at the phase switch.
+
+| dx | dt | k | p | 2D |
+|---|---|---|---|---|
+| 0.5 kb | 0.25 s | 0.25 /s | 0.0625 | 0.0625 kb^2/s |
+
 ## Running a simulation
 
 Both entry scripts select the biological condition with `--condition` and the

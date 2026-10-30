@@ -32,7 +32,7 @@ The workflow consists of four stages spanning biochemical kinetics, one-dimensio
    polymer trajectories using a distance cutoff of 2.3 monomer diameters.
    The resulting contact matrices are converted into contact-probability
    curves as a function of genomic separation, P(s), for comparison with
-   experimental scsHi-C data. `contact_map.py` performs contact extraction,
+   experimental scsHi-C data. `contacts_vs_distance_from_trajectories.py` performs contact extraction,
    and `P_s_example.ipynb` provides an example comparing simulated
    and experimental cis and trans P(s).
 
@@ -42,7 +42,7 @@ The workflow consists of four stages spanning biochemical kinetics, one-dimensio
 
 ## Requirements
 
-- **`chemistry/`**: `sympy`, `tellurium`, `pandas`
+- **`chemistry/`**: `sympy`
 - **`discrete_time_extrusion_sister/`**: `numpy`, `numba`
 - **`polymer_sister_chromatids/`**: [`HOOMD-blue`](https://hoomd-blue.readthedocs.io/), [`polychrom-hoomd`](https://github.com/open2c/polychrom-hoomd), `gsd`
 - **`analysis/`**: `numpy`, `scipy`, `h5py`, `gsd`, `cooler`, `cooltools`, `polykit`, `matplotlib`, `pandas`

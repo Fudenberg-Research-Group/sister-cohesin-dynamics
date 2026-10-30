@@ -9,6 +9,7 @@ name: sister-cohesin
 
 channels:
   - conda-forge
+  - bioconda
 
 dependencies:
   - python=3.10
@@ -26,10 +27,11 @@ dependencies:
   - sympy
   - h5py
   - cooler
+  - cooltools=0.7.1
 
   - pip:
-    # Pinned to the commits used for the manuscript. Note that cooltools is
-    # installed from git, not PyPI.
+    # polychrom-hoomd and polykit are installed from git at the commits used.
     - git+https://github.com/open2c/polychrom-hoomd.git@aad7ec01e632a0f4b45526a825ecb8530ba75a20
     - git+https://github.com/open2c/polykit.git@4bf364663ae4336384995ca21ca3bc29d689af25
-    - git+https://github.com/open2c/cooltools.git@aedd531e80e7940311f941918c6551d3229eaf21
+    - git+https://github.com/Fudenberg-Research-Group/discrete-time-extrusion.git@<commit>
+
