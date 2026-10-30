@@ -45,12 +45,13 @@ GSD, strips its existing `LEF` / `Sister` bonds, adds the bonds taken from the
 final frame of the lattice trajectories (`-1` entries dropped), FIRE-relaxes,
 equilibrates, then records a production trajectory.
 
-Reads `../discrete_time_extrusion_sister/output/tau11h/{condition}_alpha_100_tau_11h_beta0_gamma0/{condition}_trajectory{1,2}_{i}.pkl`,
+Reads `../discrete_time_extrusion_sister/output/tau11h/{condition}_alpha_{alpha}_tau_11h_beta0_gamma0/{condition}_trajectory{1,2}_{i}.pkl`,
 writes `output/{condition}_alpha_{alpha}_tau_{tau}h_beta0_gamma0/` containing
 the production `.gsd` plus the anchor and bond lists as text.
 
 `dW_dSdW_polymer.py` divides lattice positions by 5 — see *Lattice resolution
 and the `factor5` output path* in `../discrete_time_extrusion_sister/README.md`.
+
 
 ## Sweep_S8h/
 

@@ -80,10 +80,13 @@ This matches experiments in which the perturbation is present from the start,
 so a single set of rates (evaluated at 12 h) describes the whole trajectory.
 
 `dW_dSdW.py` runs **two phases**: it starts under the pre-depletion condition
-(`WT7h` or `dS7h`), then `update()` replaces every rate array with the
-post-depletion condition (`dW` or `dSdW`) and the *same* translocators continue
-from there. This mirrors experiments in which WAPL is depleted partway through
-G2 rather than from the outset.
+(`WT7h` or `dS7h`), then `update()` replaces the biochemical rate arrays
+(LEF birth, death, stalled death and state transitions) with those of the
+post-depletion condition (`dW` or `dSdW`), and the *same* translocators
+continue from there. Extruder diffusion and encounter parameters (α, β, γ,
+`LEF_diffusion_rate`) are specified once per run by the phase-1 file and held
+constant across both phases; WAPL depletion changes only the biochemical
+rates and the linker lifetime.
 
 The distinction matters mechanistically, not just bookkeeping-wise: because the
 switch is applied to the existing lattice state (`clear_trajectories=False`),
@@ -179,6 +182,20 @@ Both designs cover the same 16 h of G2, at different lattice time resolutions:
 The step counts differ because `bp_per_site` differs between the condition
 families (2500 vs 500), so one lattice step is 1.25 s in the 12h conditions and
 0.25 s in the 7h ones.
+
+## Lattice resolution and the `factor5` output path
+
+The 12h conditions use 2500 bp per lattice site, matching the 2.5 kb polymer
+monomer. The 7h conditions (`WT7h`, `dS7h`, `dW`, `dSdW`) use 500 bp per site,
+so one lattice step is 0.25 s instead of 1.25 s. Anchor files are tabulated
+in 2.5 kb units, so for these conditions `simulation_setup.anchor_scale`
+returns 5 and anchor positions are multiplied by 5. The run then writes into
+an extra `factor5/` subdirectory of the usual output folder.
+
+`dW_dSdW_polymer.py` reads from that `factor5/` folder and maps lattice
+positions back onto monomers by floor division by 5
+(`polymer_common.py`).
+
 
 ## Output
 

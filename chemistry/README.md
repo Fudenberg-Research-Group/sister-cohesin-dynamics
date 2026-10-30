@@ -82,21 +82,18 @@ a timepoint.
 This is what generates the parameter JSONs read by the lattice simulations in
 `../discrete_time_extrusion_sister/`
 
-- **`crn_core.py`** — shared module. Defines the combined cohesive +
-  extrusive reaction network (`MODEL_EXT_COH_TEMPLATE`), solves both
-  networks symbolically once (`sol_rates_coh`, `sol_rates_ext`), and
-  provides the helper functions every condition script uses
-  (`build_model`, `calculate_cohesive_parameters`,
-  `calculate_extrusive_parameters`, `calculate_sister_RAD21_bound_time`).
+- **`crn_core.py`** — shared module. Solves the cohesive and extrusive
+  networks symbolically for their rate constants once at import
+  (`sol_rates_coh`, `sol_rates_ext`), defines the mass-action ODEs of the
+  combined network (`_network_rhs`), and integrates them with SciPy
+  `solve_ivp` (LSODA, rtol = atol = 1e-8) in `simulate_network`. It also
+  provides `calculate_cohesive_parameters`, `calculate_extrusive_parameters`
+  and `calculate_sister_RAD21_bound_time`.
 - **One script per condition** — `WT12h_rates.py`, `WT7h_rates.py`,
   `dS12h_rates.py`, `dS7h_rates.py`, `dW_rates.py`, `dSdW_rates.py`. Each
-  loads its own `network_parameters_{condition}.json`, builds and simulates
-  the combined ODE model with tellurium, and derives the LEF on/off/
+  loads its own `network_parameters_{condition}.json`, integrates the
+  combined network with `simulate_network`, and derives the LEF on/off/
   transition rates from the simulated state at a chosen analysis timepoint.
-  Depletion conditions (`dW`, `dSdW`, ...) additionally simulate a WT run
-  first, apply the depletion event partway through (e.g. `dW_rates.py`
-  depletes WAPL at 6h), then continue simulating from that post-depletion
-  state before extracting rates.
 - **`extrusion_dict_RN_RB_RP_RW_HBD_WT.json`** — base template. Each
   condition script loads it and overwrites the rate / species-count fields
   with its own computed values before saving.
