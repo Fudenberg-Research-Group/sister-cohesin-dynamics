@@ -11,7 +11,7 @@ Both are accumulated over every frame of every replica and written as HDF5
 next to the trajectories.
 
 Usage:
-    python contact_map.py $SLURM_ARRAY_TASK_ID
+    python contacts_vs_distance_from_trajectories.py $SLURM_ARRAY_TASK_ID
 """
 
 import multiprocessing as mp
@@ -20,11 +20,14 @@ import sys
 import time
 from functools import partial
 
+import cooler
+import cooltools
 import gsd.hoomd
 import h5py
 import numpy as np
+import pandas as pd
 import polychrom_hoomd.utils as utils
-from polykit.analysis import polymer_analyses
+from polykit.analysis import contact_maps, polymer_analyses
 from scipy.spatial import cKDTree
 
 # --- what to analyse -----------------------------------------------------
@@ -36,6 +39,8 @@ NUMBER_TRIALS = 5          # replicas, 0-indexed
 # --- analysis parameters -------------------------------------------------
 NUMBER_OF_MAPS = 8         # monomers per bin
 CONTACT_RADIUS = 2.3       # contact cutoff, in monomer diameters
+KB_PER_MONOMER = 2.5
+BP_PER_BIN = NUMBER_OF_MAPS * KB_PER_MONOMER * 1000
 
 # Where the polymer stage wrote its trajectories, relative to this script.
 OUTPUT_ROOT = "../polymer_sister_chromatids/output"
@@ -50,6 +55,11 @@ def trajectory_dir(condition, alpha, tau):
 def trajectory_file(path_name, condition, alpha, tau, rng):
     """One replica's recorded production trajectory."""
     return f"{path_name}/trajectory_{condition}_alpha{alpha}_tau{tau}_{rng}.gsd"
+
+
+def matrix_path(path_name, kind, cutoff=CONTACT_RADIUS):
+    """HDF5 file holding the binned `kind` ('cis' or 'trans') contact map."""
+    return os.path.join(path_name, f"cutoff{cutoff}", f"{kind}_matrix.h5")
 
 
 def existing_replicas(path_name, condition, alpha, tau, number_trials):
@@ -234,6 +244,69 @@ def trans_count(path_name, condition, alpha, tau,
     return trans_matrix
 
 
+# --- contact probability vs genomic distance, P(s) -------------------------
+
+def norm_factor(dist_bp, ps, norm_dist):
+    """P(s) at the separation closest to `norm_dist` (bp)."""
+    return ps[np.argmin(abs(dist_bp - norm_dist))]
+
+
+def load_exp_ps(cool_path, nproc=1):
+    """P(s) from an experimental cooler, averaged over whole chromosomes.
+
+    Returns (dist_bp, ps). The coolers are unbalanced, so `clr_weight_name` is
+    None and the raw-count expected is used.
+    """
+    clr = cooler.Cooler(cool_path)
+
+    # one whole-chromosome region per chromosome
+    view_df = pd.DataFrame(
+        [{"chrom": chrom, "start": 0, "end": length, "name": chrom}
+         for chrom, length in clr.chromsizes.items()])
+
+    cvd = cooltools.expected_cis(
+        clr=clr,
+        view_df=view_df,
+        smooth=True,
+        clr_weight_name=None,
+        aggregate_smoothed=True,
+        nproc=nproc,
+    )
+
+    return cvd["dist_bp"], cvd["count.avg.smoothed.agg"]
+
+
+def load_sim_ps(path_name, kind, cutoff=CONTACT_RADIUS, nproc=1):
+    """P(s) from a simulated contact map written by main(). `kind` is 'cis' or 'trans'.
+
+    `expected_cis` is used for the trans maps too: the two sister chromatids
+    share one coordinate system, so averaging along the diagonals gives
+    inter-sister contact probability versus genomic separation.
+    `expected_trans` is not applicable -- it is for pairs of different
+    chromosomes, which have no common coordinate.
+    """
+    with h5py.File(matrix_path(path_name, kind, cutoff), "r") as f:
+        matrix = f[f"{kind}_matrix"][:]
+
+    clr = contact_maps.coolify(matrix, "single_conformation")
+    view_df = cooltools.lib.make_cooler_view(clr)
+
+    cvd = cooltools.expected_cis(
+        clr=clr,
+        view_df=view_df,
+        smooth=True,
+        aggregate_smoothed=True,
+        nproc=nproc,
+    )
+
+    dist_bp = cvd["dist"] * BP_PER_BIN
+    # .copy() so the masking below is not a chained assignment on a view
+    ps = cvd["balanced.avg.smoothed.agg"].copy()
+    ps.loc[dist_bp < 2] = np.nan
+
+    return dist_bp, ps
+
+
 def main():
     process_id = int(sys.argv[1]) - 1
 
@@ -264,14 +337,14 @@ def main():
         path_name, CONDITION, alpha, tau,
         number_of_monomers, NUMBER_OF_MAPS, rng_list, cutoff=CONTACT_RADIUS)
 
-    with h5py.File(f"{savedir}/cis_matrix.h5", 'w') as f:
+    with h5py.File(matrix_path(path_name, "cis"), 'w') as f:
         f.create_dataset('cis_matrix', data=cis_matrix)
 
     trans_matrix = trans_count(
         path_name, CONDITION, alpha, tau,
         number_of_monomers, NUMBER_OF_MAPS, rng_list, cutoff=CONTACT_RADIUS)
 
-    with h5py.File(f"{savedir}/trans_matrix.h5", 'w') as f:
+    with h5py.File(matrix_path(path_name, "trans"), 'w') as f:
         f.create_dataset('trans_matrix', data=trans_matrix)
 
     print(f"Wrote cis_matrix.h5 and trans_matrix.h5 to {savedir}")

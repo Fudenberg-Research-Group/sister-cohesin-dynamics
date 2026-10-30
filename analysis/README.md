@@ -2,7 +2,7 @@
 
 ## Memory requirements
 
-`contact_map.py` currently accumulates dense `int32` contact matrices in
+`contacts_vs_distance_from_trajectories.py` currently accumulates dense `int32` contact matrices in
 memory. With the default system size of 320,000 monomers per chromatid and
 8 monomers per bin, each 40,000 × 40,000 matrix requires approximately
 6.4 GB (5.96 GiB).
