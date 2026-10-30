@@ -12,7 +12,7 @@
         "A": 0.01
     },
     "LEF_on_rate": {
-        "A": 0.0011189522199300998
+        "A": 0.0011189522672944985
     },
     "LEF_off_rate": {
         "A": 0.00989277162275847
@@ -21,7 +21,7 @@
         "A": 0.00989277162275847
     },
     "LEF_diffusion_rate": {
-        "A": 0.25
+        "A": 0
     },
     "LEF_pause": {
         "A": 0
@@ -34,10 +34,10 @@
     },
     "LEF_transition_rates": {
         "21": {
-            "A": 0.011357377963881409
+            "A": 0.011357378444630603
         },
         "23": {
-            "A": 0.012032003732569074
+            "A": 0.012032007048517443
         },
         "12": {
             "A": 0.0125
@@ -46,7 +46,7 @@
             "A": 0.02615677491108585
         },
         "34": {
-            "A": 0.00029726777693078136
+            "A": 0.00029726775086514945
         },
         "43": {
             "A": 0.012329450599463753
@@ -57,12 +57,12 @@
     "region_size_bp": 800000000,
     "bp_per_site": 500,
     "num_of_sisters": 776,
-    "sister_lifetime": 9192148,
+    "sister_lifetime": 9192151,
     "sister_damping_factor": 100,
     "number_of_replica": 1,
     "steps": 36000,
     "dummy_steps": 0,
     "active_extrusion_rate": 1000,
-    "collision_release_prob": 1e-07,
-    "bypass_prob": 1e-05
+    "collision_release_prob": 1e-06,
+    "bypass_prob": 0.0001
 }

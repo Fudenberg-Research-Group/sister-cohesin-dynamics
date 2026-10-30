@@ -39,8 +39,8 @@ RESIDENCE_TIMES_HOURS = [11]
 
 # Downstream lattice/polymer parameters
 SISTER_DAMPING_FACTORS = [100]
-COLLISION_RELEASE_PROBS = [1e-7]
-BYPASS_PROBS = [1e-5]
+COLLISION_RELEASE_PROBS = [1e-6]
+BYPASS_PROBS = [1e-4]
 
 # Cohesin copy numbers
 NUM_EXTRUDERS = 7764
