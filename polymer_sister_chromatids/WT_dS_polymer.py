@@ -47,7 +47,7 @@ def main():
 
     print(f"Running simulation for condition: {condition}, replica: {iteration}")
 
-    alpha = 100
+    alpha = 50000
     tau = 11
 
     readpath = 'input'

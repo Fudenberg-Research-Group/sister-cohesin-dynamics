@@ -41,6 +41,8 @@ RESIDENCE_TIMES_HOURS = [11]
 SISTER_DAMPING_FACTORS = [100]
 COLLISION_RELEASE_PROBS = [1e-6]
 BYPASS_PROBS = [1e-4]
+# Extruder diffusion rate per leg, k (1/s); 2D = k * dx**2 (see README).
+LEF_DIFFUSION_RATE = 0.25
 
 # Cohesin copy numbers
 NUM_EXTRUDERS = 7764
@@ -162,7 +164,7 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
 
     output_params["LEF_on_rate"]["A"] = float(rates['R_free_to_RN'])
     output_params["LEF_off_rate"]["A"] = float(rates['RPW_R_free'])
-    output_params["LEF_diffusion_rate"]["A"] = 0
+    output_params["LEF_diffusion_rate"]["A"] = LEF_DIFFUSION_RATE
 
     output_params["LEF_stalled_off_rate"]["A"] = float(rates['RPW_R_free'])
     output_params["LEF_transition_rates"]["21"]["A"] = float(rates['R_RN'])

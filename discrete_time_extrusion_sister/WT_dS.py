@@ -46,7 +46,7 @@ def main():
     iteration = args.replica
 
     tau = 11
-    sister_dampings = 100
+    sister_dampings = 50000
     collision_prob_index = 0
     bypass_index = 0
 
