@@ -6,13 +6,13 @@ scsHi-C data are from Mitter et al. 2020 (GEO GSE152373), as processed
 `.cool` files at 1 kb resolution. Place them in `../experimental_data/`
 (set `EXP_ROOT` in `P_s_example.ipynb`).
 
-| Condition | Figure | GSM |
-|---|---|---|---|---|
-| WT G2 | 1, 3 | GSM4613674 |
-| G₂ entry (WT G₂-0 h/S8h) | 1| GSM4613673|
-| ΔSORORIN G₂-16 h |1, 3| GSM4613677|
-| ΔWAPL G₂-16 h | 1, 4| GSM4613677 |
-| ΔSORORIN+ΔWAPL G₂-16 h | 1, 4| GSM7105764–GSM7105767|
+| Condition | Figure | GEO | GSM |
+|---|---|---| --|
+| WT G₂-16h | 1, 3 | GSE 152373 | GSM4613674 |
+| G₂ entry (WT G₂-0 h / S8h) | 1 | GSE 152373 | GSM4613673 |
+| ΔSORORIN G₂-16 h | 1, 3 | GSE 152373 | GSM4613677 |
+| ΔWAPL G₂-16 h | 1, 4 | GSE 152373 | GSM7105758-GSM7105763 |
+| ΔSORORIN+ΔWAPL G₂-16 h | 1, 4 | GSE 152373 |GSM7105764–GSM7105767 |
 
 Genome assembly: [hg19/hg38]. Replicates are pooled as in the GEO
 processed files; all autosomes are aggregated.
