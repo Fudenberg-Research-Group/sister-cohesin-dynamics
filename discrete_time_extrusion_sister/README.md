@@ -92,6 +92,25 @@ they would experimentally. Running two independent simulations instead would
 discard that history. `prune_unbound_LEFs` is correspondingly `True` in phase 1
 (to reach a steady state) and `False` in phase 2.
 
+### Parameters used in the manuscript
+
+The configuration files in `chemistry/Step3_Extrusion_Parameters/` hold the
+biochemical rates for each condition together with default encounter
+settings (α = 100, β = 10⁻⁶, γ = 10⁻⁴, no extruder diffusion). To reproduce
+a figure, set the fields below in the phase-1 file before running the
+lattice stage. Extruder diffusion and encounter parameters are specified
+once per run and held constant across both phases; WAPL depletion changes
+only the biochemical rates and the linker lifetime.
+
+| Figure | Conditions | Config (phase 1 → phase 2) | bp/site | Δt | α `sister_damping_factor` | β `collision_release_prob` | γ `bypass_prob` | k `LEF_diffusion_rate` | 2D (per leg) |
+|---|---|---|---|---|---|---|---|---|---|
+| Fig. 3 | WT, ΔSORORIN | WT12h, dS12h | 2500 | 1.25 s | 50000 | 0 | 0 | 0 | 0 |
+| Fig. 4 | ΔWAPL, ΔSORORIN+ΔWAPL | WT7h → dW, dS7h → dSdW | 500 | 0.25 s | 100 | 10⁻⁶ | 10⁻⁴ | 0.25 s⁻¹ | 0.0625 kb²/s |
+| Sweeps, Fig. S11 | as in figure | as above | | | given in the figure | given in the figure | given in the figure | given in the figure | |
+
+β and γ are per-step probabilities at the stated lattice resolution. The
+`beta0_gamma0` in file names are sweep indices, not parameter values.
+
 ### Extruder diffusion
 
 Extruder diffusion is off in the main results (`LEF_diffusion_rate = 0`).
@@ -105,7 +124,7 @@ with equal probability (`DiffusionEngines_Sister.py`). Here k is
     2D = p * dx^2 / dt = k * dx^2.
 
 Following the convention of single molecule experiments, we report 2D.
-In the two-phase runs (dWAPL / dSORORIN+dWAPL), the diffusion probability 
+In the two-phase runs (dWAPL / dSORORIN+dWAPL), the diffusion probability
 is set by the phase-1 parameters (WT7h, dS7h) and is not changed at the phase switch.
 
 | dx | dt | k | p | 2D |
