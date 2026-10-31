@@ -55,28 +55,25 @@ depletion conditions: dSORORIN, dWAPL, dSORORIN+dWAPL, dPDS5, and dRAD21.
 ## Condition naming
 
 The simulated timeline starts at S-phase entry (S0h) and ends at G2-16h, 24 h
-in total (8 h of S phase followed by 16 h of G2). A condition name combines the
-perturbation with **the timepoint on that timeline at which its kinetic rates
-were evaluated**:
+in total (8 h of S phase followed by 16 h of G2).
 
-| Name | Perturbation | Rates evaluated at | Lattice resolution | Used by |
-|---|---|---|---|---|
-| `WT12h` | none | 12 h | 2500 bp/site | `WT_dS.py`, single phase |
-| `dS12h` | SORORIN depleted | 12 h | 2500 bp/site | `WT_dS.py`, single phase |
-| `WT7h` | none | 7 h | 500 bp/site | `dW_dSdW.py`, phase 1 |
-| `dS7h` | SORORIN depleted | 7 h | 500 bp/site | `dW_dSdW.py`, phase 1 |
-| `dW` | WAPL depleted | post-depletion | 500 bp/site | `dW_dSdW.py`, phase 2 |
-| `dSdW` | SORORIN + WAPL depleted | post-depletion | 500 bp/site | `dW_dSdW.py`, phase 2 |
+| Name | Perturbation | Lattice resolution | Used by |
+|---|---|---|---|
+| `WT12h` | none | 2500 bp/site | `WT_dS.py`, single phase |
+| `dS12h` | SORORIN depleted | 2500 bp/site | `WT_dS.py`, single phase |
+| `WT7h` | none | 500 bp/site | `dW_dSdW.py`, phase 1 |
+| `dS7h` | SORORIN depleted | 500 bp/site | `dW_dSdW.py`, phase 1 |
+| `dW` | WAPL depleted | 500 bp/site | `dW_dSdW.py`, phase 2 |
+| `dSdW` | SORORIN + WAPL depleted | 500 bp/site | `dW_dSdW.py`, phase 2 |
 
 Each `{condition}_rates.py` integrates the network from its own origin and
-reads the rates out at a local time (`analysis_timepoint_hours` in
-`network_parameters_{condition}.json`). SORORIN-depleted conditions start at
-S0h, because SORORIN loss already affects linkers during S phase, and their
-name is the readout time on the S0h timeline. WT and dW start at G2 entry
-(S8h) with linkers fully established; a WT name gives the run family it
-shares with the matching dS condition (`12h`: single-phase 16 h G2 run;
-`7h`: phase 1 of the two-phase run), and its rates are read at the midpoint
-of the corresponding lattice window.
+reads the rates out at the midpoint of that integration window
+(`analysis_timepoint_hours` in `network_parameters_{condition}.json`; for
+`dW` and `dSdW`, the midpoint of the post-depletion window). SORORIN-depleted
+conditions start at S0h, because SORORIN loss already affects linkers during
+S phase; WT and dW start at G2 entry (S8h) with linkers fully established.
+The `12h` / `7h` in a name labels the run family (single-phase 16 h G2 run
+vs phase 1 of the two-phase run).
 
 | Name | ODE origin | Integration | Readout (local) | Readout (timeline) |
 |---|---|---|---|---|

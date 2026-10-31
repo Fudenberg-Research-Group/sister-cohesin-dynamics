@@ -107,8 +107,8 @@ def run_simulation(config, residence_time, sister_damping, collision_prob, bypas
     paras_dict_local = paras_dict_coh_local | paras_dict_ext_local | init_conditions_ext_coh
     paras_dict_ext_coh_local = {str(key): value for key, value in paras_dict_local.items()}
 
-    # Integrate the network for 18 h, sampled at ~1 s.
-    df_dS = simulate_network(paras_dict_ext_coh_local, 3600 * 18, 3600 * 18)
+    # Integrate the network for 14 h, sampled at ~1 s.
+    df_dS = simulate_network(paras_dict_ext_coh_local, 3600 * 14, 3600 * 14)
 
     analysis_time_hours = config['simulation_parameters']['analysis_timepoint_hours']
 
