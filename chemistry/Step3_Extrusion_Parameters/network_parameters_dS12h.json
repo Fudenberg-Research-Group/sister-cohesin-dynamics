@@ -25,7 +25,7 @@
     },
     "simulation_parameters": {
         "depletion_level": 0.97,
-        "analysis_timepoint_hours": 11
+        "analysis_timepoint_hours": 12
     },
     "output_directory": "dS12h",
     "output_prefix": "dS12h",

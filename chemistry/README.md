@@ -68,10 +68,24 @@ were evaluated**:
 | `dW` | WAPL depleted | post-depletion | 500 bp/site | `dW_dSdW.py`, phase 2 |
 | `dSdW` | SORORIN + WAPL depleted | post-depletion | 500 bp/site | `dW_dSdW.py`, phase 2 |
 
-These labels are independent of the simulation windows inside each
-`{condition}_rates.py`, which are expressed relative to the start of that
-script's own run (e.g. `WT12h_rates.py` integrates the reaction network for
-16 h and reads out at its midpoint).
+Each `{condition}_rates.py` integrates the network from its own origin and
+reads the rates out at a local time (`analysis_timepoint_hours` in
+`network_parameters_{condition}.json`). SORORIN-depleted conditions start at
+S0h, because SORORIN loss already affects linkers during S phase, and their
+name is the readout time on the S0h timeline. WT and dW start at G2 entry
+(S8h) with linkers fully established; a WT name gives the run family it
+shares with the matching dS condition (`12h`: single-phase 16 h G2 run;
+`7h`: phase 1 of the two-phase run), and its rates are read at the midpoint
+of the corresponding lattice window.
+
+| Name | ODE origin | Integration | Readout (local) | Readout (timeline) |
+|---|---|---|---|---|
+| `WT12h` | S8h | 16 h (to S24h) | 8 h | S16h (G2-8h) |
+| `dS12h` | S0h | 24 h (to S24h) | 12 h | S12h (G2-4h) |
+| `WT7h` | S8h | 6 h (to S14h) | 3 h | S11h (G2-3h) |
+| `dS7h` | S0h | 14 h (to S14h) | 7 h | S7h |
+| `dW` | S8h; WAPL depleted at S14h | 6 h + 10 h | 5 h after depletion | S19h (G2-11h) |
+| `dSdW` | S0h; WAPL depleted at S14h | 14 h + 10 h | 5 h after depletion | S19h (G2-11h) |
 
 The `tau11h` that also appears in the parameter filenames is a different
 quantity: it is the RAD21 residence time (`RESIDENCE_TIMES_HOURS = [11]`), not
