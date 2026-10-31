@@ -12,9 +12,10 @@ cohesins become bonds between the two extruder legs (`LEF`).
 polymer_sister_chromatids/
 ├── WT_dS_polymer.py          # WT12h, dS12h
 ├── dW_dSdW_polymer.py        # dW, dSdW
+├── prepare_initial_conformation.py   # generates input/trajectory_4000_{i}.gsd
 ├── data/
 │   └── force_dict_sister_extruder.json   # force parameters
-├── input/                    # example pre-equilibrated configuration (replica 0)
+├── input/                    # pre-equilibrated configuration (replica 0)
 ├── output/                   # created per run
 └── Sweep_S8h/                # standalone density x misalignment sweep
     ├── S8h_lattice.py
@@ -25,6 +26,17 @@ polymer_sister_chromatids/
 Two chromatids of 320,000 monomers each at 2.5 kb/monomer (800 Mb per
 chromatid), monomer density 0.4, in a spherical confinement. Chromatid 2 is
 offset by `+320000`, so an aligned linker is the bond `(i, i + 320000)`.
+
+## Preparing the initial conformation
+
+Every polymer run, including `Sweep_S8h/S8h_polymer.py`, starts from
+`input/trajectory_4000_{replica}.gsd`. Replica 0 is shipped; generate others,
+each with an independent random seed, with:
+
+```bash
+cd polymer_sister_chromatids
+python prepare_initial_conformation.py --replica 1
+```
 
 ## Running
 
