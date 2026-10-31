@@ -113,9 +113,10 @@ This is what generates the parameter JSONs read by the lattice simulations in
   — this is the file `../discrete_time_extrusion_sister/WT_dS.py` and
   `dW_dSdW.py` load directly.
 
-Run with, e.g.:
+Run from `chemistry/Step3_Extrusion_Parameters/`, e.g.:
 
 ```bash
+cd chemistry/Step3_Extrusion_Parameters
 python WT12h_rates.py
 ```
 

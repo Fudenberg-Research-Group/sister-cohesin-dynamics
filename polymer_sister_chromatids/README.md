@@ -28,12 +28,16 @@ offset by `+320000`, so an aligned linker is the bond `(i, i + 320000)`.
 
 ## Running
 
+Run from `polymer_sister_chromatids/`; a GPU is required.
+
 ```bash
+cd polymer_sister_chromatids
 python WT_dS_polymer.py --condition WT --replica 0
 python WT_dS_polymer.py --condition dS --replica 0
 python dW_dSdW_polymer.py --condition dW --replica 0
 python dW_dSdW_polymer.py --condition dSdW --replica 0
 ```
+
 One example pre-equilibrated input, `input/trajectory_4000_0.gsd`
 (replica 0), is included in this repository. The full manuscript simulations
 used five independently pre-equilibrated inputs, numbered 0–4.
@@ -68,9 +72,13 @@ independently on each chromatid.
 The lattice stage can generate all 270 parameter combinations. The polymer
 stage additionally requires pre-equilibrated input.
 
+Run from `polymer_sister_chromatids/Sweep_S8h/`. The argument is a
+one-based index into the 270 sweep points (`--array=1-270`):
+
 ```bash
-python S8h_lattice.py $SLURM_ARRAY_TASK_ID        # --array=1-270, run lattice simulations first
-python S8h_polymer.py $SLURM_ARRAY_TASK_ID        # --array=1-270, run polymer simulations then
+cd polymer_sister_chromatids/Sweep_S8h
+python S8h_lattice.py $SLURM_ARRAY_TASK_ID    # lattice simulations first
+python S8h_polymer.py $SLURM_ARRAY_TASK_ID    # then polymer simulations
 ```
 
 Stage 1 writes the linker and LEF positions as text files; stage 2 reads them

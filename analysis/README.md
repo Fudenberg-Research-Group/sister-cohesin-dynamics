@@ -17,8 +17,22 @@ scsHi-C data are from Mitter et al. 2020 (GEO GSE152373), as processed
 | S4h | S11 | GSE152373 | GSM4613672 |
 
 
-Genome assembly: [hg19/hg38]. Replicates are pooled as in the GEO
+Genome assembly: hg38. Replicates are pooled as in the GEO
 processed files.
+
+## Running
+
+Run from `analysis/`:
+
+```bash
+cd analysis
+python contacts_vs_distance_from_trajectories.py 1
+```
+
+The argument is a one-based job index into `ALPHA_LIST × TAU_LIST` (with the
+defaults there is a single job, index 1), so it can be passed directly as
+`$SLURM_ARRAY_TASK_ID` with `--array=1-N`. Replica indices elsewhere in the
+repository are zero-based. `P_s_example.ipynb` is also run from `analysis/`.
 
 ## Memory requirements
 

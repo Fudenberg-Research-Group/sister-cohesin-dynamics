@@ -13,7 +13,7 @@ can be simulated together.
 ## Repo layout
 
 ```
-discrete_time_extrusion_code/
+discrete_time_extrusion_sister/
 ├── WT_dS.py                  # single-phase run: WT alone, or dSORORIN alone
 ├── dW_dSdW.py                # two-phase run: WT->dW, or dS->dSdW
 ├── input/
@@ -140,9 +140,13 @@ Both entry scripts select the biological condition with `--condition` and the
 zero-based replica index with `--replica`. The condition is required; the
 replica defaults to 0.
 
+All commands below are run from `discrete_time_extrusion_sister/`; input and
+output paths are relative to it.
+
 **Single-phase WT or dSORORIN:**
 
 ```bash
+cd discrete_time_extrusion_sister
 python WT_dS.py --condition WT --replica 0
 python WT_dS.py --condition dS --replica 0
 ```
