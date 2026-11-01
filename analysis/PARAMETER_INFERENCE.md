@@ -45,9 +45,14 @@ the mean separation between neighboring sister linkers:
 
 The combined log-space R-squared was evaluated from 40 kb to 5 Mb. Several
 parameter combinations formed a broad near-optimal region with R-squared
-greater than 0.996. After anchor generation, this produced a realized
-sister-offset standard deviation of approximately 141 kb; the input sigma and
-the realized standard deviation are distinct quantities.
+greater than 0.996. Across the sampled grid, this region spanned input sigma
+values of 100–175 kb and mean separations of 275–300 kb.
+
+The anchors used for production simulations were generated with an input
+sigma of 175 kb and a mean separation of 275 kb (2,909 linkers per replica),
+giving a realized sister-offset standard deviation of approximately 141 kb.
+The input sigma and the realized standard deviation are distinct quantities.
+
 
 ## WT linker residence time
 
@@ -72,7 +77,9 @@ The sampled `LEF_diffusion_rate` values were 0.01, 0.05, 0.10, 0.15, 0.20,
 k = LEF_diffusion_rate
 ```
 
-not directly to a diffusion coefficient. The selected value was
+The swept quantity is the per-leg step rate `k = LEF_diffusion_rate`
+(s⁻¹), which corresponds to the diffusion coefficient only through the
+lattice spacing. The selected value was
 `k = 0.25 s^-1`. At the 0.5 kb lattice spacing used for the WAPL-depletion
 simulations, the manuscript reporting convention gives
 
@@ -181,6 +188,41 @@ ps_data[(row_value, column_value)] = {
     "norm_factor": cis_ps_at_40_kb,
 }
 ```
+
+The curves come from the contact maps written by
+`contacts_vs_distance_from_trajectories.py` (run from `analysis/`). For
+example, for the WT residence-time sweep, keyed by `(alpha, tau)`:
+
+```python
+from contacts_vs_distance_from_trajectories import (
+    load_exp_ps, load_sim_ps, norm_factor, trajectory_dir)
+
+NORM_DIST_BP = 40_000
+
+ps_data = {}
+for alpha in alphas:
+    for tau in residence_times:
+        path = trajectory_dir("WT12h", alpha, tau)
+        dist_cis, ps_cis = load_sim_ps(path, "cis")
+        dist_trans, ps_trans = load_sim_ps(path, "trans")
+        ps_data[(alpha, tau)] = {
+            "dist_cis": dist_cis,
+            "ps_cis": ps_cis,
+            "dist_trans": dist_trans,
+            "ps_trans": ps_trans,
+            "norm_factor": norm_factor(dist_cis, ps_cis, NORM_DIST_BP),
+        }
+
+dist_cis_exp, ps_cis_exp = load_exp_ps(EXP_CIS_COOL)
+dist_trans_exp, ps_trans_exp = load_exp_ps(EXP_TRANS_COOL)
+exp_cis_norm_factor = norm_factor(dist_cis_exp, ps_cis_exp, NORM_DIST_BP)
+```
+
+Simulated maps are balanced (`balanced.avg.smoothed.agg`) and experimental
+maps are used unbalanced (`count.avg.smoothed.agg`); in both cases the trans
+curve is divided by the cis value at 40 kb, so the cis/trans ratio is
+preserved.
+
 
 For the G2-0 h sweep, the two keys are input sigma and mean separation:
 
