@@ -34,6 +34,18 @@ defaults there is a single job, index 1), so it can be passed directly as
 `$SLURM_ARRAY_TASK_ID` with `--array=1-N`. Replica indices elsewhere in the
 repository are zero-based. `P_s_example.ipynb` is also run from `analysis/`.
 
+## Parameter inference
+
+`inference_helpers.py` provides the shared combined cis/trans log-space
+R-squared calculation and parameter-grid scoring used for manuscript
+inference. The helper operates on P(s) curves that have already been extracted
+from experimental and simulated contact maps; it does not perform contact
+extraction itself.
+
+The scoring definition, expected dictionary structure, and the verified
+G2-0 h sister-configuration result used in Figure S2 are documented in
+[`PARAMETER_INFERENCE.md`](PARAMETER_INFERENCE.md).
+
 ## Memory requirements
 
 `contacts_vs_distance_from_trajectories.py` currently accumulates dense `int32` contact matrices in

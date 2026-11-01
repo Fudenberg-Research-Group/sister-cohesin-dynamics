@@ -64,5 +64,5 @@
     "dummy_steps": 0,
     "active_extrusion_rate": 1000,
     "collision_release_prob": 1e-06,
-    "bypass_prob": 0.0001
+    "bypass_prob": 0.001
 }

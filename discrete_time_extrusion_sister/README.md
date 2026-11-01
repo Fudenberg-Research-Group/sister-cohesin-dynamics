@@ -97,10 +97,7 @@ discard that history. `prune_unbound_LEFs` is correspondingly `True` in phase 1
 
 ### Parameters used in the manuscript
 
-The configuration files in `chemistry/Step3_Extrusion_Parameters/` hold the
-biochemical rates for each condition together with default encounter
-settings (α = 100, β = 10⁻⁶, γ = 10⁻⁴, no extruder diffusion). To reproduce
-a figure, set the fields below in the phase-1 file before running the
+The committed configuration files contain the manuscript settings listed below. The 12 h conditions use α = 50,000 with β = γ = k = 0, whereas the 7 h/two-phase conditions use α = 100, β = 10⁻⁶, γ = 10⁻³, and k = 0.25 s⁻¹. To reproduce a figure, set the fields below in the phase-1 file before running the
 lattice stage. Extruder diffusion and encounter parameters are specified
 once per run and held constant across both phases; WAPL depletion changes
 only the biochemical rates and the linker lifetime.
@@ -108,7 +105,7 @@ only the biochemical rates and the linker lifetime.
 | Figure | Conditions | Config (phase 1 → phase 2) | bp/site | Δt | α `sister_damping_factor` | β `collision_release_prob` | γ `bypass_prob` | k `LEF_diffusion_rate` | 2D (per leg) |
 |---|---|---|---|---|---|---|---|---|---|
 | Fig. 3 | WT, ΔSORORIN | WT12h, dS12h | 2500 | 1.25 s | 50000 | 0 | 0 | 0 | 0 |
-| Fig. 4 | ΔWAPL, ΔSORORIN+ΔWAPL | WT7h → dW, dS7h → dSdW | 500 | 0.25 s | 100 | 10⁻⁶ | 10⁻⁴ | 0.25 s⁻¹ | 0.0625 kb²/s |
+| Fig. 4 | ΔWAPL, ΔSORORIN+ΔWAPL | WT7h → dW, dS7h → dSdW | 500 | 0.25 s | 100 | 10⁻⁶ | 10⁻³ | 0.25 s⁻¹ | 0.0625 kb²/s |
 | Sweeps, Fig. S11 | as in figure | as above | | | given in the figure | given in the figure | given in the figure | given in the figure | |
 
 β and γ are per-step probabilities at the stated lattice resolution. The
@@ -116,11 +113,11 @@ only the biochemical rates and the linker lifetime.
 
 ### Extruder diffusion
 
-Extruder diffusion is off in the main results (`LEF_diffusion_rate = 0`).
-When enabled, every lattice step each unstalled extruder leg independently
-attempts a one-site move with probability p = k * dt, to the left or right
-with equal probability (`DiffusionEngines_Sister.py`). Here k is
-`LEF_diffusion_rate` (1/s), dt the lattice time step and dx the site size
+Extruder diffusion is disabled in the Fig. 3 configurations (`LEF_diffusion_rate = 0`)
+and enabled in the Fig. 4 two-phase configurations. When enabled, every lattice step
+each unstalled extruder leg independently attempts a one-site move with probability
+p = k * dt, to the left or right with equal probability (`DiffusionEngines_Sister.py`).
+Here k is `LEF_diffusion_rate` (1/s), dt the lattice time step and dx the site size
 (`bp_per_site`). Each leg therefore has mean-squared displacement
 <dx^2> = 2 D t with
 
