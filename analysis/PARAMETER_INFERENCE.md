@@ -58,9 +58,10 @@ The input sigma and the realized standard deviation are distinct quantities.
 
 The WT linker residence-time sweep was evaluated with the same combined
 log-space R-squared definition over 40 kb to 5 Mb. At alpha = 50,000, the
-maximum occurred at a residence time of 11 h. This 11 h value was used for the
-WT production simulations. The exact maximum R-squared value should be read
-from the saved sweep output rather than estimated from the plotted curve.
+finite residence-time grid sampled tau = 5–20 h in 1 h increments. An
+additional tau = 50,000 h simulation represented the effectively infinite
+residence-time limit. The finite grid reached its maximum at tau = 11 h
+(R-squared = 0.989564), which was used for the WT production simulations.
 
 ## Extruder diffusion rate
 
@@ -219,10 +220,9 @@ exp_cis_norm_factor = norm_factor(dist_cis_exp, ps_cis_exp, NORM_DIST_BP)
 ```
 
 Simulated maps are balanced (`balanced.avg.smoothed.agg`) and experimental
-maps are used unbalanced (`count.avg.smoothed.agg`); in both cases the trans
-curve is divided by the cis value at 40 kb, so the cis/trans ratio is
-preserved.
-
+maps are used unbalanced (`count.avg.smoothed.agg`). Both are normalized by
+the corresponding cis P(s) at 40 kb; this processing difference had negligible
+effect on parameter selection.
 
 For the G2-0 h sweep, the two keys are input sigma and mean separation:
 

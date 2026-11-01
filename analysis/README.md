@@ -46,6 +46,14 @@ The scoring definition, expected dictionary structure, and the verified
 G2-0 h sister-configuration result used in Figure S2 are documented in
 [`PARAMETER_INFERENCE.md`](PARAMETER_INFERENCE.md).
 
+## P(s) signature metrics
+
+`signature_metrics.py` calculates three metrics from extracted P(s) curves. The
+gap is the dimensionless cis/trans P(s) ratio at 40 kb; the slope is the signed
+local log-log slope of trans P(s) at 40 kb; and the shoulder is the genomic
+distance at which the cis P(s) log-log derivative is maximal within the chosen
+search window. Distances returned by the helper are in bp.
+
 ## Memory requirements
 
 `contacts_vs_distance_from_trajectories.py` currently accumulates dense `int32` contact matrices in
