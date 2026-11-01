@@ -1,9 +1,9 @@
 """Reusable scoring helpers for parameter inference from cis and trans P(s).
 
-The functions implement the combined and trans-only log-space R-squared
-calculations used for the initial sister-configuration, WT residence-time, and
-WAPL-depletion parameter sweeps. Plotting and condition-specific file I/O
-remain outside this module.
+The functions implement the combined, cis-only, and trans-only log-space
+R-squared calculations used for the initial sister-configuration, WT
+residence-time, and WAPL-depletion parameter sweeps. Plotting and
+condition-specific file I/O remain outside this module.
 """
 
 import numpy as np
@@ -147,6 +147,170 @@ def combined_log_r2(
         return np.nan
 
     return 1 - residual_sum_squares / total_sum_squares
+
+
+def cis_log_r2(
+    dist_cis_sim,
+    ps_cis_sim,
+    dist_cis_exp,
+    ps_cis_exp,
+    sim_cis_norm_factor,
+    exp_cis_norm_factor,
+    start_dist=40_000,
+    end_dist=10_000_000,
+    n_log_points=1_000,
+):
+    """Calculate cis-only R-squared in log P(s) space.
+
+    Experimental and simulated cis curves are normalized by their respective
+    cis P(s) values, normally evaluated at 40 kb. Experimental P(s) is
+    averaged in bins around a log-spaced distance grid, while simulated P(s)
+    is linearly interpolated onto that grid before the log10 transformation
+    and R-squared calculation. Arithmetic midpoints reproduce the bin edges
+    used for the manuscript diffusion-rate sweep.
+    """
+    if sim_cis_norm_factor <= 0 or exp_cis_norm_factor <= 0:
+        return np.nan
+    if start_dist <= 0 or end_dist <= start_dist or n_log_points < 2:
+        raise ValueError(
+            "Require 0 < start_dist < end_dist and n_log_points >= 2."
+        )
+
+    dist_sim = np.asarray(dist_cis_sim)
+    ps_sim = np.asarray(ps_cis_sim) / sim_cis_norm_factor
+    dist_exp = np.asarray(dist_cis_exp)
+    ps_exp = np.asarray(ps_cis_exp) / exp_cis_norm_factor
+
+    mask_exp = (
+        (dist_exp >= start_dist)
+        & (dist_exp <= end_dist)
+        & np.isfinite(dist_exp)
+        & np.isfinite(ps_exp)
+        & (ps_exp > 0)
+    )
+    mask_sim = (
+        np.isfinite(dist_sim)
+        & np.isfinite(ps_sim)
+        & (ps_sim > 0)
+    )
+    if mask_exp.sum() < 2 or mask_sim.sum() < 2:
+        return np.nan
+
+    grid_min = max(start_dist, dist_exp[mask_exp].min())
+    grid_max = min(end_dist, dist_exp[mask_exp].max())
+    if grid_min >= grid_max:
+        return np.nan
+
+    distance_grid = np.logspace(
+        np.log10(grid_min), np.log10(grid_max), n_log_points
+    )
+    bin_edges = np.concatenate(
+        (
+            [distance_grid[0] / 2],
+            (distance_grid[:-1] + distance_grid[1:]) / 2,
+            [distance_grid[-1] * 2],
+        )
+    )
+
+    exp_dist_filtered = dist_exp[mask_exp]
+    exp_ps_filtered = ps_exp[mask_exp]
+    exp_ps_binned = np.full(n_log_points, np.nan)
+    for index in range(n_log_points):
+        in_bin = (
+            (exp_dist_filtered >= bin_edges[index])
+            & (exp_dist_filtered < bin_edges[index + 1])
+        )
+        if in_bin.sum() > 0:
+            exp_ps_binned[index] = np.mean(exp_ps_filtered[in_bin])
+
+    sort_index = np.argsort(dist_sim[mask_sim])
+    sim_dist_sorted = dist_sim[mask_sim][sort_index]
+    sim_ps_sorted = ps_sim[mask_sim][sort_index]
+    sim_ps_interpolated = np.interp(
+        distance_grid, sim_dist_sorted, sim_ps_sorted
+    )
+
+    valid = (
+        np.isfinite(exp_ps_binned)
+        & (exp_ps_binned > 0)
+        & np.isfinite(sim_ps_interpolated)
+        & (sim_ps_interpolated > 0)
+    )
+    if valid.sum() < 2:
+        return np.nan
+
+    log_exp = np.log10(exp_ps_binned[valid])
+    log_sim = np.log10(sim_ps_interpolated[valid])
+    residual_sum_squares = np.sum((log_exp - log_sim) ** 2)
+    total_sum_squares = np.sum((log_exp - np.mean(log_exp)) ** 2)
+    if total_sum_squares == 0:
+        return np.nan
+
+    return 1 - residual_sum_squares / total_sum_squares
+
+
+def score_diffusion_rate_grid(
+    ps_data,
+    diffusion_rates,
+    dist_cis_exp,
+    ps_cis_exp,
+    exp_cis_norm_factor,
+    start_dist=40_000,
+    end_dist=10_000_000,
+    n_log_points=1_000,
+):
+    """Score a one-dimensional diffusion-rate sweep against cis P(s).
+
+    ``ps_data`` is keyed by ``LEF_diffusion_rate``. Each entry must contain
+    ``dist_cis``, ``ps_cis``, and the simulation cis ``norm_factor``.
+    """
+    diffusion_rates = list(diffusion_rates)
+    if not diffusion_rates:
+        raise ValueError("diffusion_rates must not be empty.")
+
+    r2_values = np.full(len(diffusion_rates), np.nan, dtype=float)
+    for index, diffusion_rate in enumerate(diffusion_rates):
+        data = ps_data.get(diffusion_rate)
+        if data is None:
+            continue
+
+        r2_values[index] = cis_log_r2(
+            dist_cis_sim=data["dist_cis"],
+            ps_cis_sim=data["ps_cis"],
+            dist_cis_exp=dist_cis_exp,
+            ps_cis_exp=ps_cis_exp,
+            sim_cis_norm_factor=data["norm_factor"],
+            exp_cis_norm_factor=exp_cis_norm_factor,
+            start_dist=start_dist,
+            end_dist=end_dist,
+            n_log_points=n_log_points,
+        )
+
+    if np.all(np.isnan(r2_values)):
+        best_rate = None
+        best_r2 = np.nan
+        relative_difference_from_best = np.full_like(r2_values, np.nan)
+    else:
+        best_index = int(np.nanargmax(r2_values))
+        best_rate = diffusion_rates[best_index]
+        best_r2 = r2_values[best_index]
+        if best_r2 == 0:
+            relative_difference_from_best = np.full_like(r2_values, np.nan)
+        else:
+            relative_difference_from_best = (
+                best_r2 - r2_values
+            ) / abs(best_r2)
+
+    return {
+        "diffusion_rates": diffusion_rates,
+        "start_dist": start_dist,
+        "end_dist": end_dist,
+        "n_log_points": n_log_points,
+        "r2_values": r2_values,
+        "best_rate": best_rate,
+        "best_r2": best_r2,
+        "relative_difference_from_best": relative_difference_from_best,
+    }
 
 
 def trans_log_r2(

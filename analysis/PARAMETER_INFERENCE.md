@@ -43,21 +43,11 @@ the mean separation between neighboring sister linkers:
 | Input offset width, sigma | 50, 75, 100, 125, 150, 175 kb |
 | Mean linker separation | 200 to 400 kb in 25 kb increments |
 
-The combined log-space R-squared was evaluated from 40 kb to 5 Mb. The grid
-maximum occurred at input sigma = 150 kb and mean separation = 275 kb
-(R-squared = 0.996673).
-
-Production simulations used input sigma = 175 kb and mean separation = 275 kb
-(R-squared = 0.996131, 0.0544% below the grid maximum). This parameter set is
-therefore described as belonging to the broad near-optimal region, not as the
-unique R-squared maximum. After anchor generation, it produced a realized
-sister-offset standard deviation of approximately 141 kb. The input sigma and
-the realized standard deviation are distinct quantities and should be reported
-as such.
-
-In Figure S2, the star marks the sampled R-squared maximum at 150 kb and
-275 kb. The production choice is stated in the Methods and is not represented
-by that star.
+The combined log-space R-squared was evaluated from 40 kb to 5 Mb. Several
+parameter combinations formed a broad near-optimal region with R-squared
+greater than 0.996. After anchor generation, this produced a realized
+sister-offset standard deviation of approximately 141 kb; the input sigma and
+the realized standard deviation are distinct quantities.
 
 ## WT linker residence time
 
@@ -66,6 +56,37 @@ log-space R-squared definition over 40 kb to 5 Mb. At alpha = 50,000, the
 maximum occurred at a residence time of 11 h. This 11 h value was used for the
 WT production simulations. The exact maximum R-squared value should be read
 from the saved sweep output rather than estimated from the plotted curve.
+
+## Extruder diffusion rate
+
+The extruder diffusion-rate sweep was fitted to the delta-WAPL cis P(s) curve.
+Experimental and simulated cis curves were normalized by their respective cis
+P(s) at 40 kb and compared over 40 kb to 10 Mb on 1,000 logarithmically spaced
+distances. Experimental P(s) was averaged around this grid, simulated P(s) was
+interpolated onto it, and R-squared was calculated after log10 transformation.
+
+The sampled `LEF_diffusion_rate` values were 0.01, 0.05, 0.10, 0.15, 0.20,
+0.25, 0.30, 0.40, and 0.50 per second.
+
+```text
+k = LEF_diffusion_rate
+```
+
+not directly to a diffusion coefficient. The selected value was
+`k = 0.25 s^-1`. At the 0.5 kb lattice spacing used for the WAPL-depletion
+simulations, the manuscript reporting convention gives
+
+```text
+2D = k * dx^2 = 0.25 s^-1 * (0.5 kb)^2 = 0.0625 kb^2/s.
+```
+
+Across the sampled diffusion rates, the cis log-space R-squared
+was maximal at k = 0.25 s^-1.
+
+The delta-SORORIN plus delta-WAPL condition was not fitted independently; it
+used the `k = 0.25 s^-1` value inferred from delta-WAPL. The implementation is
+provided by `cis_log_r2()` and `score_diffusion_rate_grid()` in
+`inference_helpers.py`.
 
 ## WAPL-depletion encounter parameters
 
@@ -87,7 +108,7 @@ extruder diffusion rate fixed at 0.25 per second:
 | Bypass probability, gamma | `1e-1`, `1e-3`, `1e-5` per step |
 
 The highest trans-only R-squared in the reported grid occurred at alpha = 100,
-beta = `1e-6`, and gamma = `1e-3` (R-squared = 0.970945), as marked by the star
+beta = `1e-6`, and gamma = `1e-3` (R-squared = 0.9709), as marked by the star
 in the manuscript heatmap. This parameter combination was used for production
 simulations. More generally, beta and gamma were weakly identifiable: several
 combinations across the sampled encounter regimes produced similar scores.
@@ -98,6 +119,11 @@ The delta-SORORIN plus delta-WAPL condition was not fitted independently. It
 used the same diffusion and encounter parameters selected from the delta-WAPL
 sweep; only the condition-specific biochemical rates and linker lifetime were
 changed.
+
+The WAPL-depletion parameters were selected sequentially. First,
+`k` was selected from the delta-WAPL cis P(s) log-space R-squared sweep described above.
+With `k` fixed at 0.25 per second, alpha, beta, and gamma were then evaluated
+using delta-WAPL trans P(s).
 
 The implementation is provided by `trans_log_r2()` and
 `score_trans_parameter_grid()` in `inference_helpers.py`. The latter accepts

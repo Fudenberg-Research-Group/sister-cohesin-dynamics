@@ -36,11 +36,11 @@ repository are zero-based. `P_s_example.ipynb` is also run from `analysis/`.
 
 ## Parameter inference
 
-`inference_helpers.py` provides the shared combined cis/trans log-space
-R-squared calculation and parameter-grid scoring used for manuscript
-inference. The helper operates on P(s) curves that have already been extracted
-from experimental and simulated contact maps; it does not perform contact
-extraction itself.
+`inference_helpers.py` provides the shared combined, cis-only, and trans-only
+log-space R-squared calculations and parameter-grid scoring used for
+manuscript inference. The helper operates on P(s) curves that have already
+been extracted from experimental and simulated contact maps; it does not
+perform contact extraction itself.
 
 The scoring definition, expected dictionary structure, and the verified
 G2-0 h sister-configuration result used in Figure S2 are documented in
