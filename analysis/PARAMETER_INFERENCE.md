@@ -116,7 +116,7 @@ extruder diffusion rate fixed at 0.25 per second:
 | Bypass probability, gamma | `1e-1`, `1e-3`, `1e-5` per step |
 
 The highest trans-only R-squared in the reported grid occurred at alpha = 100,
-beta = `1e-6`, and gamma = `1e-3` (R-squared = 0.9709), as marked by the star
+beta = `1e-6`, and gamma = `1e-3` (R-squared = 0.984), as marked by the star
 in the manuscript heatmap. This parameter combination was used for production
 simulations. More generally, beta and gamma were weakly identifiable: several
 combinations across the sampled encounter regimes produced similar scores.

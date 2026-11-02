@@ -40,7 +40,7 @@ RESIDENCE_TIMES_HOURS = [11]
 SISTER_DAMPING_FACTORS = [100]
 COLLISION_RELEASE_PROBS = [1e-6]
 BYPASS_PROBS = [1e-3]
-# Extruder diffusion rate per leg, k (1/s); 2D = k * dx**2 (see README).
+# Per-leg total step rate k (1/s). D = k * dx**2 / 2.
 LEF_DIFFUSION_RATE = 0.25
 
 # Cohesin copy numbers

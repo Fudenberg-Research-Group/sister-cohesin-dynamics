@@ -127,9 +127,9 @@ Following the convention of single molecule experiments, we report 2D.
 In the two-phase runs (dWAPL / dSORORIN+dWAPL), the diffusion probability
 is set by the phase-1 parameters (WT7h, dS7h) and is not changed at the phase switch.
 
-| dx | dt | k | p | 2D |
+| dx | dt | k | p | D |
 |---|---|---|---|---|
-| 0.5 kb | 0.25 s | 0.25 /s | 0.0625 | 0.0625 kb^2/s |
+| 0.5 kb | 0.25 s | 0.25 /s | 0.0625 | 0.03125 kb^2/s |
 
 ## Running a simulation
 

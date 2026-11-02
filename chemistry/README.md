@@ -131,10 +131,10 @@ Conditions currently generated, and how the run scripts in
 |---|---|
 | `WT12h` | `WT_dS.py`, `CONDITIONS["WT"]` |
 | `dS12h` | `WT_dS.py`, `CONDITIONS["dS"]` |
-| `WT7h` | `dW_dSdW.py`, phase 1 of `CONDITIONS["WT_dW"]` |
-| `dW` | `dW_dSdW.py`, phase 2 of `CONDITIONS["WT_dW"]` |
-| `dS7h` | `dW_dSdW.py`, phase 1 of `CONDITIONS["dS_dSdW"]` |
-| `dSdW` | `dW_dSdW.py`, phase 2 of `CONDITIONS["dS_dSdW"]` |
+| `WT7h` | `dW_dSdW.py`, phase 1 of `CONDITIONS["dW"]` |
+| `dW` | `dW_dSdW.py`, phase 2 of `CONDITIONS["dW"]` |
+| `dS7h` | `dW_dSdW.py`, phase 1 of `CONDITIONS["dSdW"]` |
+| `dSdW` | `dW_dSdW.py`, phase 2 of `CONDITIONS["dSdW"]` |
 
 ## Environment
 
