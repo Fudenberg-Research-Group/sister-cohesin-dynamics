@@ -1,0 +1,58 @@
+{   
+    "Angular forces": {
+        "Curvature": {
+            "Stiffness": 0,
+            "Type": "Harmonic"
+        }
+    },
+    "Bonded forces": {
+        "Backbone": {
+            "Rest length": 1.0,
+            "Type": "Harmonic",
+            "Wiggle distance": 0.05
+        },
+        "Sister": {
+            "Rest length": 0.5,
+            "Type": "Harmonic",
+            "Wiggle distance": 0.2
+        },
+        "Sister_dummy": {
+            "Rest length": 0,
+            "Type": "Harmonic",
+            "Wiggle distance": 0
+        },
+        "LEF": {
+            "Rest length": 0.5,
+            "Type": "Harmonic",
+            "Wiggle distance": 0.2
+        },
+        "LEF_dummy": {
+            "Rest length": 0,
+            "Type": "Harmonic",
+            "Wiggle distance": 0
+        }
+    },
+    "External forces": {
+        "Confinement": {}
+    },
+    "Non-bonded forces": {
+        "Repulsion": {
+            "Cutoff": 1.0,
+            "Matrix": {
+                "A": {
+                    "A": 2.0
+                }
+            },
+            "Type": "Polychrom"
+        },
+        "Attraction": {
+            "Cutoff": 1.5,
+            "Matrix": {
+                "A": {
+                    "A": 0.2
+                }
+            },
+            "Type": "Polychrom"
+        }
+    }
+}

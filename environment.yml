@@ -1,0 +1,37 @@
+#
+#   conda env create -f environment.yml
+#   conda activate sister-cohesin
+#
+# HOOMD-blue must be 3.x: the polymer scripts use hoomd.md.methods.NVE,
+# which was removed in 4.0.
+
+name: sister-cohesin
+
+channels:
+  - conda-forge
+  - bioconda
+
+dependencies:
+  - python=3.10
+  - pip
+  - hoomd==3.11[build=*gpu*]
+  - gsd==2.9
+  - numpy<1.24
+  - scipy
+  - numba
+  - pandas
+  - matplotlib
+  - joblib
+  - ipython
+  - notebook
+  - sympy
+  - h5py
+  - cooler
+  - cooltools=0.7.1
+
+  - pip:
+    # polychrom-hoomd and polykit are installed from git at the commits used.
+    - git+https://github.com/open2c/polychrom-hoomd.git@aad7ec01e632a0f4b45526a825ecb8530ba75a20
+    - git+https://github.com/open2c/polykit.git@4bf364663ae4336384995ca21ca3bc29d689af25
+    - git+https://github.com/Fudenberg-Research-Group/discrete-time-extrusion.git@332473c
+
