@@ -58,4 +58,4 @@ Code used in this study is publicly available in this repository.
 **Associated publication:**
 > Yan, X., Tortora, M., Goloborodko, A., Fudenberg, G.
 > Chromosome folding encodes mechanisms of cohesion maintenance.
-> Manuscript in preparation (2026).
+> bioRxiv (2026). https://doi.org/10.64898/2026.11.02.763844 
