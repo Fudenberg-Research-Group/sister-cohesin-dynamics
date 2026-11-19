@@ -40,7 +40,7 @@ python prepare_initial_conformation.py --replica 1
 
 ## Running
 
-Run from `polymer_sister_chromatids/`; a GPU is required.
+Run from `polymer_sister_chromatids/`; a GPU is required for the full-scale manuscript simulations.
 
 ```bash
 cd polymer_sister_chromatids
@@ -102,8 +102,8 @@ parameter blocks kept identical.
 ## Environment
 
 [`HOOMD-blue`](https://hoomd-blue.readthedocs.io/),
-[`polychrom-hoomd`](https://github.com/open2c/polychrom-hoomd), `gsd`, `numpy`.
-GPU is used when available, otherwise CPU.
+[`polychrom-hoomd` project fork](https://github.com/Fudenberg-Research-Group/polychrom-hoomd/tree/2633b18951b281802fa2d9170270373a055d5084) (based on [`open2c/polychrom-hoomd`](https://github.com/open2c/polychrom-hoomd)), `gsd`, `numpy`.
+The code can fall back to CPU for development or reduced-size tests, but full-scale production runs require a GPU. The production environment was tested on an NVIDIA L40S with 46 GB VRAM.
 
 `Sweep_S8h/S8h_lattice.py` additionally needs the **non-sister** package
 [discrete-time-extrusion](https://github.com/Fudenberg-Research-Group/discrete-time-extrusion)

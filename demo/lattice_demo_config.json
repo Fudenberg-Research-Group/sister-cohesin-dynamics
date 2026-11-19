@@ -1,0 +1,13 @@
+{
+  "base_parameters": "chemistry/Step3_Extrusion_Parameters/WT12h/WT12h_alpha50000_tau11h_beta0_gamma0.json",
+  "parameter_overrides": {
+    "region_size_bp": 1000000,
+    "num_of_sisters": 4,
+    "number_of_replica": 1,
+    "dummy_steps": 0
+  },
+  "steps": 1000,
+  "sample_interval": 100,
+  "seed": 42,
+  "paired_anchor_positions_local": [50, 150, 250, 350]
+}

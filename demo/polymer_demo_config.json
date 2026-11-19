@@ -1,0 +1,12 @@
+{
+  "lattice_output": "demo/demo_output/lattice",
+  "monomers_per_chromatid": 400,
+  "density": 0.4,
+  "sister_separation": 0.5,
+  "seed": 42,
+  "fire_blocks": 2,
+  "fire_steps": 1000,
+  "equilibration_steps": 5000,
+  "production_steps": 5000,
+  "gsd_period": 500
+}
