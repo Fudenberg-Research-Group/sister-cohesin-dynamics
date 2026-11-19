@@ -118,6 +118,28 @@ A successful run prints `Lattice demo complete`. The demo completed in approxima
 
 This reduced-size demo validates the sister-aware lattice execution path and output format; it is not intended to reproduce manuscript-scale results.
 
+### Reduced-size sister-polymer simulation
+
+The polymer demo maps the final frame of the reduced lattice demo onto two 400-monomer sister chromatids (800 particles total). It uses the same named Sister/LEF topology updates, force-field construction, FIRE relaxation, and Langevin production path as the manuscript-scale polymer simulations, but runs only 2,000 FIRE steps, 5,000 equilibration steps, and 5,000 production steps.
+
+Run this demo from the repository root in the production environment on a CUDA-capable GPU. Generate the lattice inputs in the same environment immediately before the polymer stage to ensure that the serialized NumPy data are compatible:
+
+```bash
+python demo/run_lattice_demo.py
+python demo/run_polymer_demo.py
+```
+
+The expected primary output files are:
+
+```text
+demo/demo_output/polymer/summary.json
+demo/demo_output/polymer/polymer_demo_trajectory.gsd
+```
+
+A successful run prints `Polymer demo complete`. On the tested Rocky Linux 8.10 cluster system with an NVIDIA L40S GPU, the polymer stage completed in approximately 3 seconds wall time. The validated output contained 800 particles, three unique Sister bonds, and ten LEF bonds.
+
+This reduced-size demo validates the coupled lattice-to-polymer execution path and output format; it is not intended to reproduce manuscript-scale results.
+
 Full production runtimes depend on the condition, simulation step count, number of replicas, and available hardware. The exact step counts are documented in the component READMEs.
 
 ## Attribution
