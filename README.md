@@ -47,14 +47,66 @@ The workflow consists of four stages spanning biochemical kinetics, one-dimensio
 - **`polymer_sister_chromatids/`**: [`HOOMD-blue`](https://hoomd-blue.readthedocs.io/), [`polychrom-hoomd`](https://github.com/open2c/polychrom-hoomd), `gsd`
 - **`analysis/`**: `numpy`, `scipy`, `h5py`, `gsd`, `cooler`, `cooltools`, `polykit`, `matplotlib`, `pandas`
 
+## Installation and tested system
+
+The full production workflow was tested on Rocky Linux 8.10 (x86_64) with Python 3.10.16. Exact dependency versions are recorded in `environment.yml`.
+
+The cluster environment used an AMD EPYC 9534 CPU and an NVIDIA L40S GPU with 46 GB VRAM, NVIDIA driver 580.159.04, and CUDA runtime 11.8. The chemistry and lattice stages run on CPU. A CUDA-capable GPU is required for the full-scale polymer simulations. The contact-map analysis requires a high-memory node; see `analysis/README.md` for memory estimates.
+
+For the CPU-only quick demo on a desktop computer, create the lightweight environment from the repository root:
+
+```bash
+conda create -n sister-cohesin-demo -c conda-forge \
+  python=3.10.16 numpy=1.23.5 scipy=1.15.2 \
+  pandas=2.2.3 sympy=1.13.3
+conda activate sister-cohesin-demo
+```
+
+Creating this demo environment took approximately 6 minutes on a MacBook Pro with an Apple M1 Pro processor and 16 GB RAM, running macOS 15.2 (arm64).
+
+For the full production workflow on a Linux system with a CUDA-capable GPU, create the production environment:
+
+```bash
+conda env create -f environment.yml
+conda activate sister-cohesin
+```
+
+## Quick demo
+
+The included WT12h network configuration provides a small CPU-only demo of the biochemical parameter-generation stage. From the repository root, run:
+
+```bash
+mkdir -p demo_output
+cd demo_output
+python ../chemistry/Step3_Extrusion_Parameters/WT12h_rates.py
+```
+
+The expected output file is:
+
+```text
+demo_output/WT12h/WT12h_alpha50000_tau11h_beta0_gamma0.json
+```
+
+A successful run ends with:
+
+```text
+All simulations complete!
+```
+
+The demo completed in approximately 3 seconds on a MacBook Pro with an Apple M1 Pro processor and 16 GB RAM, running macOS 15.2 (arm64).
+
+Full production runtimes depend on the condition, simulation step count, number of replicas, and available hardware. The exact step counts are documented in the component READMEs.
+
 ## Attribution
 
 The loop-extrusion implementation builds on the [discrete-time extrusion framework](https://github.com/Fudenberg-Research-Group/discrete-time-extrusion). See, Tortora et al., *The physical chemistry of interphase loop extrusion* ([Cell Genomics, 2026](https://doi.org/10.1016/j.xgen.2025.101098)).
 
 This work develops a multiscale framework for sister-chromatid cohesion that couples biochemical regulation of sister-linking and loop-extruding cohesins to their dynamics and encounters on paired sister chromatids and to 3D polymer simulations of sister chromosome folding.
 
-## Code availability
-Code used in this study is publicly available in this repository.
+## Code availability and license
+
+Code used in this study is publicly available at [sister-cohesin-dynamics GitHub repository](https://github.com/Fudenberg-Research-Group/sister-cohesin-dynamics). The software is distributed under the [MIT License](LICENSE).
+
 **Associated publication:**
 > Yan, X., Tortora, M., Goloborodko, A., Fudenberg, G.
 > Chromosome folding encodes mechanisms of cohesion maintenance.
