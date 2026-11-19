@@ -21,4 +21,4 @@ __pycache__/
 **/.vscode/
 
 # Quick-demo output
-demo_output/
+demo/demo_output/

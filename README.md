@@ -58,7 +58,7 @@ For the CPU-only quick demo on a desktop computer, create the lightweight enviro
 ```bash
 conda create -n sister-cohesin-demo -c conda-forge \
   python=3.10.16 numpy=1.23.5 scipy=1.15.2 \
-  pandas=2.2.3 sympy=1.13.3
+  pandas=2.2.3 sympy=1.13.3 numba=0.60.0
 conda activate sister-cohesin-demo
 ```
 
@@ -71,20 +71,23 @@ conda env create -f environment.yml
 conda activate sister-cohesin
 ```
 
-## Quick demo
+## Quick demos
+
+### Chemistry parameter generation
 
 The included WT12h network configuration provides a small CPU-only demo of the biochemical parameter-generation stage. From the repository root, run:
 
 ```bash
-mkdir -p demo_output
-cd demo_output
-python ../chemistry/Step3_Extrusion_Parameters/WT12h_rates.py
+mkdir -p demo/demo_output
+cd demo/demo_output
+python ../../chemistry/Step3_Extrusion_Parameters/WT12h_rates.py
+cd ../..
 ```
 
 The expected output file is:
 
 ```text
-demo_output/WT12h/WT12h_alpha50000_tau11h_beta0_gamma0.json
+demo/demo_output/WT12h/WT12h_alpha50000_tau11h_beta0_gamma0.json
 ```
 
 A successful run ends with:
@@ -94,6 +97,26 @@ All simulations complete!
 ```
 
 The demo completed in approximately 3 seconds on a MacBook Pro with an Apple M1 Pro processor and 16 GB RAM, running macOS 15.2 (arm64).
+
+### Reduced-size sister-lattice simulation
+
+The lattice demo reuses the production WT12h rates but reduces each chromatid to a 1 Mb (400-site) lattice with nine extruders, four paired sister linkers at deterministic local positions, and 1,000 simulation steps. The script automatically applies the second-chromatid coordinate offset. From the repository root, run:
+
+```bash
+python demo/run_lattice_demo.py
+```
+
+The expected output files are:
+
+```text
+demo/demo_output/lattice/summary.json
+demo/demo_output/lattice/lattice_demo_trajectory1_0.pkl
+demo/demo_output/lattice/lattice_demo_trajectory2_0.pkl
+```
+
+A successful run prints `Lattice demo complete`. The demo completed in approximately 3 seconds on the MacBook Pro described above. The summary reports 400 lattice sites per chromatid, nine extruders per chromatid, four sister linkers, 1,000 steps, and 11 saved samples per chromatid.
+
+This reduced-size demo validates the sister-aware lattice execution path and output format; it is not intended to reproduce manuscript-scale results.
 
 Full production runtimes depend on the condition, simulation step count, number of replicas, and available hardware. The exact step counts are documented in the component READMEs.
 
