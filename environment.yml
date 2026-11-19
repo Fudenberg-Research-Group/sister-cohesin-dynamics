@@ -33,7 +33,7 @@ dependencies:
 
   - pip:
     # polychrom-hoomd and polykit are installed from git at the commits used.
-    - git+https://github.com/open2c/polychrom-hoomd.git@aad7ec01e632a0f4b45526a825ecb8530ba75a20
+    - git+https://github.com/Fudenberg-Research-Group/polychrom-hoomd.git@2633b18951b281802fa2d9170270373a055d5084
     - git+https://github.com/open2c/polykit.git@4bf364663ae4336384995ca21ca3bc29d689af25
     - git+https://github.com/Fudenberg-Research-Group/discrete-time-extrusion.git@332473c
 
