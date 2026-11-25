@@ -102,7 +102,7 @@ parameter blocks kept identical.
 ## Environment
 
 [`HOOMD-blue`](https://hoomd-blue.readthedocs.io/),
-[`polychrom-hoomd` project fork](https://github.com/Fudenberg-Research-Group/polychrom-hoomd/tree/2633b18951b281802fa2d9170270373a055d5084) (based on [`open2c/polychrom-hoomd`](https://github.com/open2c/polychrom-hoomd)), `gsd`, `numpy`.
+[`polychrom-hoomd`](https://github.com/open2c/polychrom-hoomd/tree/d03269f43ade7d15135b5467c714c099fe396f08), `gsd`, `numpy`.
 The code can fall back to CPU for development or reduced-size tests, but full-scale production runs require a GPU. The production environment was tested on an NVIDIA L40S with 46 GB VRAM.
 
 `Sweep_S8h/S8h_lattice.py` additionally needs the **non-sister** package

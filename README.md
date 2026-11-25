@@ -44,7 +44,7 @@ The workflow consists of four stages spanning biochemical kinetics, one-dimensio
 
 - **`chemistry/`**: `sympy`
 - **`discrete_time_extrusion_sister/`**: `numpy`, `numba`
-- **`polymer_sister_chromatids/`**: [`HOOMD-blue`](https://hoomd-blue.readthedocs.io/), [`polychrom-hoomd` project fork](https://github.com/Fudenberg-Research-Group/polychrom-hoomd/tree/2633b18951b281802fa2d9170270373a055d5084) (based on [`open2c/polychrom-hoomd`](https://github.com/open2c/polychrom-hoomd)), `gsd`
+- **`polymer_sister_chromatids/`**: [`HOOMD-blue`](https://hoomd-blue.readthedocs.io/), [`polychrom-hoomd`](https://github.com/open2c/polychrom-hoomd/tree/d03269f43ade7d15135b5467c714c099fe396f08), `gsd`
 - **`analysis/`**: `numpy`, `scipy`, `h5py`, `gsd`, `cooler`, `cooltools`, `polykit`, `matplotlib`, `pandas`
 
 ## Installation and tested system

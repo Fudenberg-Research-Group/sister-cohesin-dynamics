@@ -32,7 +32,7 @@ BOND_TYPES = ["Backbone", "LEF", "LEF_dummy", "Sister", "Sister_dummy"]
 
 
 def require_named_topology_support():
-    """Fail clearly when the unpatched upstream dependency is installed."""
+    """Fail clearly when the installed dependency lacks named bond support."""
     parameters = inspect.signature(extrude.update_topology).parameters
     if "bond_name" not in parameters:
         raise RuntimeError(

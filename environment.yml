@@ -32,8 +32,8 @@ dependencies:
   - cooltools=0.7.1
 
   - pip:
-    # polychrom-hoomd and polykit are installed from git at the commits used.
-    - git+https://github.com/Fudenberg-Research-Group/polychrom-hoomd.git@2633b18951b281802fa2d9170270373a055d5084
+    # This upstream polychrom-hoomd commit supports named bond types.
+    - git+https://github.com/open2c/polychrom-hoomd.git@d03269f43ade7d15135b5467c714c099fe396f08
     - git+https://github.com/open2c/polykit.git@4bf364663ae4336384995ca21ca3bc29d689af25
     - git+https://github.com/Fudenberg-Research-Group/discrete-time-extrusion.git@332473c
 
