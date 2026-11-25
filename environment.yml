@@ -12,26 +12,27 @@ channels:
   - bioconda
 
 dependencies:
-  - python=3.10
+  - python=3.10.16
   - pip
-  - hoomd==3.11[build=*gpu*]
-  - gsd==2.9
-  - numpy<1.24
-  - scipy
-  - numba
-  - pandas
-  - matplotlib
-  - joblib
-  - ipython
-  - notebook
-  - sympy
-  - h5py
-  - cooler
+  - cuda-version=11.8
+  - cudatoolkit=11.8.0
+  - "hoomd==3.11.0[build=*gpu*]"
+  - gsd=2.9.0
+  - numpy=1.23.5
+  - scipy=1.15.2
+  - numba=0.60.0
+  - pandas=2.2.3
+  - matplotlib=3.10.1
+  - joblib=1.4.2
+  - ipython=8.34.0
+  - notebook=7.3.3
+  - sympy=1.13.3
+  - h5py=3.13.0
+  - cooler=0.10.2
   - cooltools=0.7.1
 
   - pip:
-    # polychrom-hoomd and polykit are installed from git at the commits used.
-    - git+https://github.com/open2c/polychrom-hoomd.git@aad7ec01e632a0f4b45526a825ecb8530ba75a20
+    - git+https://github.com/open2c/polychrom-hoomd.git@d03269f43ade7d15135b5467c714c099fe396f08
     - git+https://github.com/open2c/polykit.git@4bf364663ae4336384995ca21ca3bc29d689af25
     - git+https://github.com/Fudenberg-Research-Group/discrete-time-extrusion.git@332473c
 

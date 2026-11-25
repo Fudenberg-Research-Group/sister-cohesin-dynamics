@@ -44,8 +44,103 @@ The workflow consists of four stages spanning biochemical kinetics, one-dimensio
 
 - **`chemistry/`**: `sympy`
 - **`discrete_time_extrusion_sister/`**: `numpy`, `numba`
-- **`polymer_sister_chromatids/`**: [`HOOMD-blue`](https://hoomd-blue.readthedocs.io/), [`polychrom-hoomd`](https://github.com/open2c/polychrom-hoomd), `gsd`
+- **`polymer_sister_chromatids/`**: [`HOOMD-blue`](https://hoomd-blue.readthedocs.io/), [`polychrom-hoomd`](https://github.com/open2c/polychrom-hoomd/tree/d03269f43ade7d15135b5467c714c099fe396f08), `gsd`
 - **`analysis/`**: `numpy`, `scipy`, `h5py`, `gsd`, `cooler`, `cooltools`, `polykit`, `matplotlib`, `pandas`
+
+## Installation and tested system
+
+The full production workflow was tested on Rocky Linux 8.10 (x86_64) with Python 3.10.16. Exact dependency versions are recorded in `environment.yml`.
+
+The cluster environment used an AMD EPYC 9534 CPU and an NVIDIA L40S GPU with 46 GB VRAM, NVIDIA driver 580.159.04, and CUDA runtime 11.8. The chemistry and lattice stages run on CPU. A CUDA-capable GPU is required for the full-scale polymer simulations. The contact-map analysis requires a high-memory node; see `analysis/README.md` for memory estimates.
+
+For the CPU-only quick demo on a desktop computer, create the lightweight environment from the repository root:
+
+```bash
+conda create -n sister-cohesin-demo -c conda-forge \
+  python=3.10.16 numpy=1.23.5 scipy=1.15.2 \
+  pandas=2.2.3 sympy=1.13.3 numba=0.60.0
+conda activate sister-cohesin-demo
+```
+
+Creating this demo environment took approximately 6 minutes on a MacBook Pro with an Apple M1 Pro processor and 16 GB RAM, running macOS 15.2 (arm64).
+
+For the full production workflow on a Linux system with a CUDA-capable GPU, create the production environment:
+
+```bash
+conda env create -f environment.yml
+conda activate sister-cohesin
+```
+
+## Quick demos
+
+### Chemistry parameter generation
+
+The included WT12h network configuration provides a small CPU-only demo of the biochemical parameter-generation stage. From the repository root, run:
+
+```bash
+mkdir -p demo/demo_output
+cd demo/demo_output
+python ../../chemistry/Step3_Extrusion_Parameters/WT12h_rates.py
+cd ../..
+```
+
+The expected output file is:
+
+```text
+demo/demo_output/WT12h/WT12h_alpha50000_tau11h_beta0_gamma0.json
+```
+
+A successful run ends with:
+
+```text
+All simulations complete!
+```
+
+The demo completed in approximately 3 seconds on a MacBook Pro with an Apple M1 Pro processor and 16 GB RAM, running macOS 15.2 (arm64).
+
+### Reduced-size sister-lattice simulation
+
+The lattice demo reuses the production WT12h rates but reduces each chromatid to a 1 Mb (400-site) lattice with nine extruders, four paired sister linkers at deterministic local positions, and 1,000 simulation steps. The script automatically applies the second-chromatid coordinate offset. From the repository root, run:
+
+```bash
+python demo/run_lattice_demo.py
+```
+
+The expected output files are:
+
+```text
+demo/demo_output/lattice/summary.json
+demo/demo_output/lattice/lattice_demo_trajectory1_0.pkl
+demo/demo_output/lattice/lattice_demo_trajectory2_0.pkl
+```
+
+A successful run prints `Lattice demo complete`. The demo completed in approximately 3 seconds on the MacBook Pro described above. The summary reports 400 lattice sites per chromatid, nine extruders per chromatid, four sister linkers, 1,000 steps, and 11 saved samples per chromatid.
+
+This reduced-size demo validates the sister-aware lattice execution path and output format; it is not intended to reproduce manuscript-scale results.
+
+### Reduced-size sister-polymer simulation
+
+The polymer demo maps the final frame of the reduced lattice demo onto two 400-monomer sister chromatids (800 particles total). It uses the same named Sister/LEF topology updates, force-field construction, FIRE relaxation, and Langevin production path as the manuscript-scale polymer simulations, but runs only 2,000 FIRE steps, 5,000 equilibration steps, and 5,000 production steps.
+
+Run this demo from the repository root in the production environment on a CUDA-capable GPU. Generate the lattice inputs in the same environment immediately before the polymer stage to ensure that the serialized NumPy data are compatible:
+
+```bash
+python demo/run_lattice_demo.py
+python demo/run_polymer_demo.py
+```
+
+The expected primary output files are:
+
+```text
+demo/demo_output/polymer/summary.json
+demo/demo_output/polymer/polymer_demo_trajectory.gsd
+```
+
+A successful run prints `Polymer demo complete`. On the tested Rocky Linux 8.10 cluster system with an NVIDIA L40S GPU, the polymer stage completed in approximately 3 seconds wall time. The validated output contained 800 particles, three unique Sister bonds, and ten LEF bonds.
+
+This reduced-size demo validates the coupled lattice-to-polymer execution path and output format; it is not intended to reproduce manuscript-scale results.
+
+Full production runtimes depend on the condition, simulation step count, number of replicas, and available hardware. The exact step counts are documented in the component READMEs.
 
 ## Attribution
 
@@ -53,8 +148,10 @@ The loop-extrusion implementation builds on the [discrete-time extrusion framewo
 
 This work develops a multiscale framework for sister-chromatid cohesion that couples biochemical regulation of sister-linking and loop-extruding cohesins to their dynamics and encounters on paired sister chromatids and to 3D polymer simulations of sister chromosome folding.
 
-## Code availability
-Code used in this study is publicly available in this repository.
+## Code availability and license
+
+Code used in this study is publicly available at [sister-cohesin-dynamics GitHub repository](https://github.com/Fudenberg-Research-Group/sister-cohesin-dynamics). The software is distributed under the [MIT License](LICENSE).
+
 **Associated publication:**
 > Yan, X., Tortora, M., Goloborodko, A., Fudenberg, G.
 > Chromosome folding encodes mechanisms of cohesion maintenance.
